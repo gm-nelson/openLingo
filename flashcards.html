@@ -962,183 +962,181 @@
     </div>
     
     <script>
-        // Variables globales
-        let currentStep = 1;
-        let flashcardsData = [];
-        let currentCardIndex = 0;
-        let selectedImages = {};
+    // Variables globales
+    let currentStep = 1;
+    let flashcardsData = [];
+    let currentCardIndex = 0;
+    let selectedImages = {};
+    
+    // Variables TTS
+    let ttsEnabled = true;
+    let ttsSettings = {
+        voice: 'US English Female',
+        rate: 1.0,
+        pitch: 1.0,
+        volume: 1.0
+    };
+    let voices = [];
+    let speechSynthesis = window.speechSynthesis;
+    
+    // Imágenes de respaldo por si las URLs proporcionadas fallan
+    const backupImages = {
+        "comida": [
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Good_Food_Display_-_NCI_Visuals_Online.jpg/600px-Good_Food_Display_-_NCI_Visuals_Online.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Bananas_white_background.jpg/600px-Bananas_white_background.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Cheeseburger.jpg/600px-Cheeseburger.jpg"
+        ],
+        "animales": [
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Walking_tiger_female.jpg/600px-Walking_tiger_female.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Cecil_the_lion_at_Hwange_National_Park_%284516560206%29.jpg/600px-Cecil_the_lion_at_Hwange_National_Park_%284516560206%29.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Columbian_Shark_Catfish.jpg/600px-Columbian_Shark_Catfish.jpg"
+        ],
+        "viajes": [
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Crane_estate_(5).jpg/600px-Crane_estate_(5).jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Half_Dome_from_Glacier_Point%2C_Yosemite_NP_-_Diliff.jpg/600px-Half_Dome_from_Glacier_Point%2C_Yosemite_NP_-_Diliff.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Tour_eiffel_at_sunrise_from_the_trocadero.jpg/600px-Tour_eiffel_at_sunrise_from_the_trocadero.jpg"
+        ],
+        "default": [
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Red_Apple.jpg/600px-Red_Apple.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/600px-Image_created_with_a_mobile_phone.png",
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Arduino_ftdi_chip-1.jpg/600px-Arduino_ftdi_chip-1.jpg"
+        ]
+    };
+    
+    // Claves de API públicas de demostración (limitadas)
+    const demoApiKeys = {
+        pixabay: "37636874-6e2a85b4c4b9a1d5e5d2c8d9c", // Demo key (limitada)
+        unsplash: "YOUR_UNSPLASH_ACCESS_KEY", // Necesitas obtener tu propia clave
+        pexels: "YOUR_PEXELS_API_KEY" // Necesitas obtener tu propia clave
+    };
+    
+    // Elementos del DOM
+    const stepContents = {
+        1: document.getElementById('step1-content'),
+        2: document.getElementById('step2-content'),
+        3: document.getElementById('step3-content'),
+        4: document.getElementById('step4-content')
+    };
+    
+    // Inicializar la aplicación
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configurar event listeners para los botones
+        document.getElementById('generatePrompt').addEventListener('click', generatePrompt);
+        document.getElementById('backToStep1').addEventListener('click', () => navigateToStep(1));
+        document.getElementById('processJson').addEventListener('click', processJson);
+        document.getElementById('backToStep2').addEventListener('click', () => navigateToStep(2));
+        document.getElementById('generateCards').addEventListener('click', generateCards);
+        document.getElementById('backToStep3').addEventListener('click', () => navigateToStep(3));
+        document.getElementById('restartProcess').addEventListener('click', restartProcess);
         
-        // Variables TTS
-        let ttsEnabled = true;
-        let ttsSettings = {
-            voice: 'US English Female',
-            rate: 1.0,
-            pitch: 1.0,
-            volume: 1.0
-        };
-        let voices = [];
-        let speechSynthesis = window.speechSynthesis;
+        // Event listeners para navegación de flashcards
+        document.getElementById('prevCard').addEventListener('click', showPrevCard);
+        document.getElementById('nextCard').addEventListener('click', showNextCard);
+        document.getElementById('speakCard').addEventListener('click', speakCurrentCard);
+        document.getElementById('flashcard').addEventListener('click', flipCard);
         
-        // Servidores de imágenes para sugerencias
-        const imgServers = [
-            {
-                name: "Unsplash",
-                url: (query) => `https://api.unsplash.com/search/photos?page=1&query=${encodeURIComponent(query)}&client_id=YOUR_UNSPLASH_KEY&per_page=5`,
-                processData: (data) => data.results.map(img => img.urls.small),
-                requiresKey: true
-            },
-            {
-                name: "Pixabay",
-                url: (query) => `https://pixabay.com/api/?key=YOUR_PIXABAY_KEY&q=${encodeURIComponent(query)}&image_type=photo&per_page=5`,
-                processData: (data) => data.hits.map(img => img.webformatURL),
-                requiresKey: true
-            },
-            {
-                name: "Wikimedia",
-                url: (query) => `https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url&iiurlwidth=300&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrnamespace=6&gsrlimit=5`,
-                processData: (data) => {
-                    const pages = data.query?.pages;
-                    if (!pages) return [];
-                    return Object.values(pages).map(page => page.imageinfo?.[0]?.thumburl || '').filter(url => url);
-                },
-                requiresKey: false
-            },
-            {
-                name: "Google Custom",
-                url: (query) => `https://www.googleapis.com/customsearch/v1?key=YOUR_GOOGLE_KEY&cx=YOUR_CX&searchType=image&q=${encodeURIComponent(query)}&num=5`,
-                processData: (data) => data.items?.map(img => img.link) || [],
-                requiresKey: true
-            },
-            {
-                name: "Lorem Picsum",
-                url: () => {
-                    const images = [];
-                    for (let i = 0; i < 5; i++) {
-                        const id = Math.floor(Math.random() * 1000);
-                        images.push(`https://picsum.photos/300/200?random=${id}`);
-                    }
-                    return Promise.resolve(images);
-                },
-                processData: (data) => data,
-                requiresKey: false,
-                isDirect: true
-            }
-        ];
+        // Configurar event listeners para TTS
+        document.getElementById('ttsEnabled').addEventListener('change', toggleTTS);
+        document.getElementById('ttsVoice').addEventListener('change', updateTTSSettings);
+        document.getElementById('ttsRate').addEventListener('input', updateTTSSettings);
+        document.getElementById('ttsPitch').addEventListener('input', updateTTSSettings);
+        document.getElementById('ttsVolume').addEventListener('input', updateTTSSettings);
+        document.getElementById('testTTSBtn').addEventListener('click', testTTS);
         
-        // Imágenes de respaldo por si las URLs proporcionadas fallan
-        const backupImages = {
-            "comida": [
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Good_Food_Display_-_NCI_Visuals_Online.jpg/600px-Good_Food_Display_-_NCI_Visuals_Online.jpg",
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Good_Food_Display_-_NCI_Visuals_Online.jpg/600px-Good_Food_Display_-_NCI_Visuals_Online.jpg"
-            ],
-            "animales": [
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Walking_tiger_female.jpg/600px-Walking_tiger_female.jpg",
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Cecil_the_lion_at_Hwange_National_Park_%284516560206%29.jpg/600px-Cecil_the_lion_at_Hwange_National_Park_%284516560206%29.jpg"
-            ],
-            "viajes": [
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Crane_estate_(5).jpg/600px-Crane_estate_(5).jpg",
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Half_Dome_from_Glacier_Point%2C_Yosemite_NP_-_Diliff.jpg/600px-Half_Dome_from_Glacier_Point%2C_Yosemite_NP_-_Diliff.jpg"
-            ],
-            "default": [
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Red_Apple.jpg/600px-Red_Apple.jpg",
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/600px-Image_created_with_a_mobile_phone.png"
-            ]
-        };
-        
-        // Elementos del DOM
-        const stepContents = {
-            1: document.getElementById('step1-content'),
-            2: document.getElementById('step2-content'),
-            3: document.getElementById('step3-content'),
-            4: document.getElementById('step4-content')
-        };
-        
-        // Inicializar la aplicación
-        document.addEventListener('DOMContentLoaded', function() {
-            // Configurar event listeners para los botones
-            document.getElementById('generatePrompt').addEventListener('click', generatePrompt);
-            document.getElementById('backToStep1').addEventListener('click', () => navigateToStep(1));
-            document.getElementById('processJson').addEventListener('click', processJson);
-            document.getElementById('backToStep2').addEventListener('click', () => navigateToStep(2));
-            document.getElementById('generateCards').addEventListener('click', generateCards);
-            document.getElementById('backToStep3').addEventListener('click', () => navigateToStep(3));
-            document.getElementById('restartProcess').addEventListener('click', restartProcess);
-            
-            // Event listeners para navegación de flashcards
-            document.getElementById('prevCard').addEventListener('click', showPrevCard);
-            document.getElementById('nextCard').addEventListener('click', showNextCard);
-            document.getElementById('speakCard').addEventListener('click', speakCurrentCard);
-            document.getElementById('flashcard').addEventListener('click', flipCard);
-            
-            // Configurar event listeners para TTS
-            document.getElementById('ttsEnabled').addEventListener('change', toggleTTS);
-            document.getElementById('ttsVoice').addEventListener('change', updateTTSSettings);
-            document.getElementById('ttsRate').addEventListener('input', updateTTSSettings);
-            document.getElementById('ttsPitch').addEventListener('input', updateTTSSettings);
-            document.getElementById('ttsVolume').addEventListener('input', updateTTSSettings);
-            document.getElementById('testTTSBtn').addEventListener('click', testTTS);
-            
-            // Cargar voces disponibles
-            loadVoices();
-            
-            // Si speechSynthesis no está disponible, deshabilitar TTS
-            if (!speechSynthesis) {
-                document.getElementById('ttsEnabled').disabled = true;
-                document.getElementById('ttsEnabled').parentElement.innerHTML += 
-                    '<br><small style="color: #e74c3c;">TTS no está disponible en tu navegador</small>';
+        // Configurar delegación de eventos para sugerencias de imágenes
+        document.getElementById('imageSelectionContainer').addEventListener('click', function(e) {
+            // Manejar clic en botón de sugerencias
+            if (e.target && e.target.id && e.target.id.startsWith('load-suggestions-')) {
+                const cardIndex = parseInt(e.target.id.replace('load-suggestions-', ''));
+                loadImageSuggestions(cardIndex);
+                e.preventDefault();
             }
             
-            // Inicializar con el paso 1
-            updateStepIndicator(1);
-            toggleTTS(); // Aplicar estado inicial de TTS
+            // Manejar clic en elementos de sugerencia
+            if (e.target && e.target.closest && e.target.closest('.suggestion-item')) {
+                const suggestionItem = e.target.closest('.suggestion-item');
+                const cardIndex = parseInt(suggestionItem.dataset.cardIndex);
+                const imageUrl = suggestionItem.dataset.imageUrl;
+                const source = suggestionItem.dataset.source;
+                
+                selectSuggestion(cardIndex, imageUrl, source);
+                e.preventDefault();
+            }
+            
+            // Manejar clic en botón de cargar más sugerencias
+            if (e.target && e.target.parentElement && 
+                e.target.parentElement.classList.contains('load-more-btn') &&
+                e.target.tagName === 'BUTTON') {
+                const cardIndexMatch = e.target.onclick.toString().match(/loadImageSuggestions\((\d+)\)/);
+                if (cardIndexMatch) {
+                    const cardIndex = parseInt(cardIndexMatch[1]);
+                    loadImageSuggestions(cardIndex);
+                    e.preventDefault();
+                }
+            }
         });
         
-        // Navegar entre pasos
-        function navigateToStep(step) {
-            // Ocultar todos los pasos
-            Object.values(stepContents).forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            // Mostrar el paso actual
-            stepContents[step].classList.remove('hidden');
-            
-            // Actualizar el indicador de pasos
-            updateStepIndicator(step);
-            
-            currentStep = step;
+        // Cargar voces disponibles
+        loadVoices();
+        
+        // Si speechSynthesis no está disponible, deshabilitar TTS
+        if (!speechSynthesis) {
+            document.getElementById('ttsEnabled').disabled = true;
+            document.getElementById('ttsEnabled').parentElement.innerHTML += 
+                '<br><small style="color: #e74c3c;">TTS no está disponible en tu navegador</small>';
         }
+        
+        // Inicializar con el paso 1
+        updateStepIndicator(1);
+        toggleTTS(); // Aplicar estado inicial de TTS
+    });
+    
+    // Navegar entre pasos
+    function navigateToStep(step) {
+        // Ocultar todos los pasos
+        Object.values(stepContents).forEach(content => {
+            content.classList.add('hidden');
+        });
+        
+        // Mostrar el paso actual
+        stepContents[step].classList.remove('hidden');
         
         // Actualizar el indicador de pasos
-        function updateStepIndicator(activeStep) {
-            // Resetear todos los pasos
-            for (let i = 1; i <= 4; i++) {
-                const stepElement = document.getElementById(`step${i}`);
-                stepElement.classList.remove('active');
-            }
-            
-            // Activar el paso actual
-            document.getElementById(`step${activeStep}`).classList.add('active');
+        updateStepIndicator(step);
+        
+        currentStep = step;
+    }
+    
+    // Actualizar el indicador de pasos
+    function updateStepIndicator(activeStep) {
+        // Resetear todos los pasos
+        for (let i = 1; i <= 4; i++) {
+            const stepElement = document.getElementById(`step${i}`);
+            stepElement.classList.remove('active');
         }
         
-        // Generar el prompt para la IA
-        function generatePrompt() {
-            // Obtener valores del formulario
-            const nativeLanguage = document.getElementById('nativeLanguage').value;
-            const targetLanguage = document.getElementById('targetLanguage').value;
-            const topic = document.getElementById('topic').value;
-            const level = document.getElementById('level').value;
-            const cardCount = document.getElementById('cardCount').value;
-            
-            // Validar que se haya ingresado un tema
-            if (!topic.trim()) {
-                alert('Por favor ingresa un tema para las flashcards.');
-                document.getElementById('topic').focus();
-                return;
-            }
-            
-            // Crear el prompt para la IA
-            const prompt = `Genera un JSON con ${cardCount} flashcards para aprender ${targetLanguage} con lengua nativa ${nativeLanguage}. 
+        // Activar el paso actual
+        document.getElementById(`step${activeStep}`).classList.add('active');
+    }
+    
+    // Generar el prompt para la IA
+    function generatePrompt() {
+        // Obtener valores del formulario
+        const nativeLanguage = document.getElementById('nativeLanguage').value;
+        const targetLanguage = document.getElementById('targetLanguage').value;
+        const topic = document.getElementById('topic').value;
+        const level = document.getElementById('level').value;
+        const cardCount = document.getElementById('cardCount').value;
+        
+        // Validar que se haya ingresado un tema
+        if (!topic.trim()) {
+            alert('Por favor ingresa un tema para las flashcards.');
+            document.getElementById('topic').focus();
+            return;
+        }
+        
+        // Crear el prompt para la IA
+        const prompt = `Genera un JSON con ${cardCount} flashcards para aprender ${targetLanguage} con lengua nativa ${nativeLanguage}. 
 
 INSTRUCCIONES:
 - Tema: ${topic}
@@ -1163,878 +1161,994 @@ INSTRUCCIONES:
 - ${targetLanguage.toLowerCase() === 'inglés' ? 'Incluye la transcripción fonética IPA para cada palabra en inglés.' : ''}
 - Los ejemplos deben ser frases útiles y prácticas.
 - El JSON debe ser válido y estar listo para parsear.`;
-            
-            // Mostrar el prompt en el paso 2
-            document.getElementById('promptText').value = prompt;
-            
-            // Navegar al paso 2
-            navigateToStep(2);
+        
+        // Mostrar el prompt en el paso 2
+        document.getElementById('promptText').value = prompt;
+        
+        // Navegar al paso 2
+        navigateToStep(2);
+    }
+    
+    // Procesar el JSON ingresado por el usuario
+    function processJson() {
+        const jsonInput = document.getElementById('aiResponse').value.trim();
+        const messageDiv = document.getElementById('jsonMessage');
+        
+        // Validar que se haya ingresado algo
+        if (!jsonInput) {
+            showMessage('Por favor pega el JSON generado por la IA.', 'error');
+            return;
         }
         
-        // Procesar el JSON ingresado por el usuario
-        function processJson() {
-            const jsonInput = document.getElementById('aiResponse').value.trim();
-            const messageDiv = document.getElementById('jsonMessage');
+        try {
+            // Parsear el JSON
+            const data = JSON.parse(jsonInput);
             
-            // Validar que se haya ingresado algo
-            if (!jsonInput) {
-                showMessage('Por favor pega el JSON generado por la IA.', 'error');
-                return;
+            // Validar la estructura básica
+            if (!data.cards || !Array.isArray(data.cards) || data.cards.length === 0) {
+                throw new Error('El JSON debe contener un array "cards" con al menos una flashcard.');
             }
             
-            try {
-                // Parsear el JSON
-                const data = JSON.parse(jsonInput);
-                
-                // Validar la estructura básica
-                if (!data.cards || !Array.isArray(data.cards) || data.cards.length === 0) {
-                    throw new Error('El JSON debe contener un array "cards" con al menos una flashcard.');
+            // Validar cada tarjeta
+            data.cards.forEach((card, index) => {
+                if (!card.native || !card.target) {
+                    throw new Error(`La flashcard ${index + 1} debe tener propiedades "native" y "target".`);
                 }
-                
-                // Validar cada tarjeta
-                data.cards.forEach((card, index) => {
-                    if (!card.native || !card.target) {
-                        throw new Error(`La flashcard ${index + 1} debe tener propiedades "native" y "target".`);
-                    }
-                });
-                
-                // Almacenar los datos
-                flashcardsData = data.cards;
-                
-                // Mostrar mensaje de éxito
-                showMessage(`JSON procesado correctamente. Se encontraron ${flashcardsData.length} flashcards.`, 'success');
-                
-                // Generar búsqueda de imágenes después de un breve delay
-                setTimeout(() => {
-                    startImageSearch();
-                }, 1000);
-                
-            } catch (error) {
-                showMessage(`Error en el JSON: ${error.message}`, 'error');
-                console.error('Error al parsear JSON:', error);
-            }
-        }
-        
-        // Mostrar mensaje
-        function showMessage(text, type) {
-            const messageDiv = document.getElementById('jsonMessage');
-            messageDiv.textContent = text;
-            messageDiv.className = `message ${type}`;
-            messageDiv.style.display = 'block';
+            });
             
-            // Ocultar mensaje después de 5 segundos
-            if (type !== 'error') {
-                setTimeout(() => {
-                    messageDiv.style.display = 'none';
-                }, 5000);
-            }
-        }
-        
-        // Iniciar la búsqueda de imágenes
-        function startImageSearch() {
-            // Navegar al paso 3
-            navigateToStep(3);
+            // Almacenar los datos
+            flashcardsData = data.cards;
             
-            // Renderizar las secciones de búsqueda de imágenes
-            renderImageSearches();
+            // Mostrar mensaje de éxito
+            showMessage(`JSON procesado correctamente. Se encontraron ${flashcardsData.length} flashcards.`, 'success');
+            
+            // Generar búsqueda de imágenes después de un breve delay
+            setTimeout(() => {
+                startImageSearch();
+            }, 1000);
+            
+        } catch (error) {
+            showMessage(`Error en el JSON: ${error.message}`, 'error');
+            console.error('Error al parsear JSON:', error);
         }
+    }
+    
+    // Mostrar mensaje
+    function showMessage(text, type) {
+        const messageDiv = document.getElementById('jsonMessage');
+        messageDiv.textContent = text;
+        messageDiv.className = `message ${type}`;
+        messageDiv.style.display = 'block';
+        
+        // Ocultar mensaje después de 5 segundos
+        if (type !== 'error') {
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+    }
+    
+    // Iniciar la búsqueda de imágenes
+    function startImageSearch() {
+        // Navegar al paso 3
+        navigateToStep(3);
         
         // Renderizar las secciones de búsqueda de imágenes
-        function renderImageSearches() {
-            const container = document.getElementById('imageSelectionContainer');
-            container.innerHTML = '';
+        renderImageSearches();
+    }
+    
+    // Renderizar las secciones de búsqueda de imágenes
+    function renderImageSearches() {
+        const container = document.getElementById('imageSelectionContainer');
+        container.innerHTML = '';
+        
+        // Para cada flashcard, crear una sección de búsqueda de imágenes
+        flashcardsData.forEach((card, index) => {
+            // Crear contenedor para esta palabra
+            const cardContainer = document.createElement('div');
+            cardContainer.className = 'image-search-container';
+            cardContainer.id = `image-container-${index}`;
             
-            // Para cada flashcard, crear una sección de búsqueda de imágenes
-            flashcardsData.forEach((card, index) => {
-                // Crear contenedor para esta palabra
-                const cardContainer = document.createElement('div');
-                cardContainer.className = 'image-search-container';
-                cardContainer.id = `image-container-${index}`;
-                
-                // Título con la palabra
-                const header = document.createElement('div');
-                header.className = 'image-search-header';
-                header.innerHTML = `
+            // Título con la palabra
+            const header = document.createElement('div');
+            header.className = 'image-search-header';
+            header.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                     <h3>${card.target} (${card.native})</h3>
-                    <span id="image-status-${index}" class="image-status ${selectedImages[index] ? 'selected' : ''}">
-                        ${selectedImages[index] ? '✓ Imagen guardada' : 'Sin imagen'}
-                    </span>
-                `;
-                
-                // Botones de búsqueda rápida
-                const searchButtons = document.createElement('div');
-                searchButtons.className = 'search-buttons';
-                
-                // Crear enlaces de búsqueda para Google y Bing
-                const googleSearchUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(card.target)}`;
-                const bingSearchUrl = `https://www.bing.com/images/search?q=${encodeURIComponent(card.target)}`;
-                
-                searchButtons.innerHTML = `
-                    <a href="${googleSearchUrl}" target="_blank" class="btn btn-secondary">
-                        <i class="fab fa-google"></i> Buscar en Google Images
-                    </a>
-                    <a href="${bingSearchUrl}" target="_blank" class="btn btn-secondary">
-                        <i class="fab fa-microsoft"></i> Buscar en Bing Images
-                    </a>
-                `;
-                
-                // Campo para pegar la URL de la imagen
-                const urlInputContainer = document.createElement('div');
-                urlInputContainer.className = 'image-url-input';
-                urlInputContainer.innerHTML = `
-                    <input type="text" id="image-url-${index}" 
-                           placeholder="Pega aquí la URL de la imagen (copiada de Google/Bing)" 
-                           value="${selectedImages[index] ? selectedImages[index].url : ''}">
-                    <button class="btn btn-small" id="test-image-${index}">
-                        <i class="fas fa-eye"></i> Verificar
-                    </button>
-                    <button class="btn btn-small" id="save-image-${index}">
-                        <i class="fas fa-save"></i> Guardar
-                    </button>
-                `;
-                
-                // Previsualización de imagen
-                const previewContainer = document.createElement('div');
-                previewContainer.className = `image-preview ${selectedImages[index] ? '' : 'empty'}`;
-                previewContainer.id = `image-preview-${index}`;
-                
-                if (selectedImages[index]) {
-                    previewContainer.innerHTML = `<img src="${selectedImages[index].url}" alt="${card.target}" onerror="handleImageError(${index})">`;
-                } else {
-                    previewContainer.innerHTML = `
-                        <i class="fas fa-image"></i>
-                        <p>Previsualización de imagen</p>
-                        <p><small>Pega una URL o usa las sugerencias automáticas</small></p>
-                    `;
-                }
-                
-                // Contenedor para sugerencias de imágenes
-                const suggestionsContainer = document.createElement('div');
-                suggestionsContainer.className = 'image-suggestions';
-                suggestionsContainer.id = `suggestions-${index}`;
-                suggestionsContainer.innerHTML = `
-                    <div class="suggestions-header">
-                        <h4><i class="fas fa-lightbulb"></i> Sugerencias Automáticas</h4>
-                        <span id="suggestions-status-${index}">No cargadas</span>
+                    <div>
+                        <span class="server-tag" style="background-color: #3498db;">Google</span>
+                        <span class="server-tag" style="background-color: #0078d4;">Bing</span>
+                        <span class="server-tag" style="background-color: #4CAF50;">Sugerencias</span>
                     </div>
-                    <div class="server-buttons" id="server-buttons-${index}">
-                        <!-- Los botones de servidores se generarán aquí -->
-                    </div>
-                    <div id="suggestions-grid-${index}" class="suggestions-grid">
-                        <!-- Las imágenes sugeridas aparecerán aquí -->
-                    </div>
-                    <button class="btn btn-small load-more-btn" id="load-more-${index}" style="display: none;">
-                        <i class="fas fa-sync-alt"></i> Cargar más sugerencias
-                    </button>
-                    <div id="loading-suggestions-${index}" class="loading-suggestions" style="display: none;">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Buscando imágenes...</p>
-                    </div>
+                </div>
+                <span id="image-status-${index}" class="image-status ${selectedImages[index] ? 'selected' : ''}">
+                    ${selectedImages[index] ? '✓ Imagen guardada' : 'Sin imagen'}
+                </span>
+            `;
+            
+            // Botones de búsqueda rápida
+            const searchButtons = document.createElement('div');
+            searchButtons.className = 'search-buttons';
+            
+            // Crear enlaces de búsqueda para Google y Bing
+            const googleSearchUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(card.target)}`;
+            const bingSearchUrl = `https://www.bing.com/images/search?q=${encodeURIComponent(card.target)}`;
+            
+            searchButtons.innerHTML = `
+                <a href="${googleSearchUrl}" target="_blank" class="btn btn-secondary">
+                    <i class="fab fa-google"></i> Buscar en Google Images
+                </a>
+                <a href="${bingSearchUrl}" target="_blank" class="btn btn-secondary">
+                    <i class="fab fa-microsoft"></i> Buscar en Bing Images
+                </a>
+                <button class="btn" id="load-suggestions-${index}">
+                    <i class="fas fa-lightbulb"></i> Ver Sugerencias
+                </button>
+            `;
+            
+            // Campo para pegar la URL de la imagen
+            const urlInputContainer = document.createElement('div');
+            urlInputContainer.className = 'image-url-input';
+            urlInputContainer.innerHTML = `
+                <input type="text" id="image-url-${index}" 
+                       placeholder="Pega aquí la URL de la imagen (copiada de Google/Bing)" 
+                       value="${selectedImages[index] ? selectedImages[index].url : ''}">
+                <button class="btn btn-small" id="test-image-${index}">
+                    <i class="fas fa-eye"></i> Verificar
+                </button>
+                <button class="btn btn-small" id="save-image-${index}">
+                    <i class="fas fa-save"></i> Guardar
+                </button>
+            `;
+            
+            // Previsualización de imagen
+            const previewContainer = document.createElement('div');
+            previewContainer.className = `image-preview ${selectedImages[index] ? '' : 'empty'}`;
+            previewContainer.id = `image-preview-${index}`;
+            
+            if (selectedImages[index]) {
+                previewContainer.innerHTML = `<img src="${selectedImages[index].url}" alt="${card.target}" onerror="handleImageError(${index})">`;
+            } else {
+                previewContainer.innerHTML = `
+                    <i class="fas fa-image"></i>
+                    <p>Previsualización de imagen</p>
+                    <p><small>Pega una URL y haz clic en "Verificar"</small></p>
                 `;
-                
-                // Agregar elementos al contenedor
-                cardContainer.appendChild(header);
-                cardContainer.appendChild(searchButtons);
-                cardContainer.appendChild(urlInputContainer);
-                cardContainer.appendChild(previewContainer);
-                cardContainer.appendChild(suggestionsContainer);
-                container.appendChild(cardContainer);
-                
-                // Configurar event listeners para los botones
-                document.getElementById(`test-image-${index}`).addEventListener('click', () => {
-                    testImageUrl(index);
-                });
-                
-                document.getElementById(`save-image-${index}`).addEventListener('click', () => {
+            }
+            
+            // Contenedor para sugerencias de imágenes
+            const suggestionsContainer = document.createElement('div');
+            suggestionsContainer.className = 'image-suggestions';
+            suggestionsContainer.id = `suggestions-${index}`;
+            suggestionsContainer.innerHTML = `
+                <h4><i class="fas fa-lightbulb"></i> Sugerencias automáticas</h4>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
+                    Haz clic en "Ver Sugerencias" para obtener imágenes relacionadas con "${card.target}"
+                </p>
+                <div id="suggestions-grid-${index}" style="display: none;"></div>
+            `;
+            
+            // Agregar elementos al contenedor
+            cardContainer.appendChild(header);
+            cardContainer.appendChild(searchButtons);
+            cardContainer.appendChild(urlInputContainer);
+            cardContainer.appendChild(previewContainer);
+            cardContainer.appendChild(suggestionsContainer);
+            container.appendChild(cardContainer);
+            
+            // Configurar event listeners para los botones
+            document.getElementById(`test-image-${index}`).addEventListener('click', () => {
+                testImageUrl(index);
+            });
+            
+            document.getElementById(`save-image-${index}`).addEventListener('click', () => {
+                saveImageUrl(index);
+            });
+            
+            // Permitir guardar con Enter
+            document.getElementById(`image-url-${index}`).addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
                     saveImageUrl(index);
-                });
-                
-                // Permitir guardar con Enter
-                document.getElementById(`image-url-${index}`).addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        saveImageUrl(index);
-                    }
-                });
-                
-                // Inicializar sugerencias para esta palabra
-                initializeImageSuggestions(index, card.target);
-            });
-            
-            // Actualizar contador
-            updateImageSelectionCounter();
-        }
-        
-        // Inicializar sugerencias de imágenes para una palabra
-        function initializeImageSuggestions(cardIndex, searchTerm) {
-            const serverButtonsContainer = document.getElementById(`server-buttons-${cardIndex}`);
-            const suggestionsGrid = document.getElementById(`suggestions-grid-${cardIndex}`);
-            const loadMoreBtn = document.getElementById(`load-more-${cardIndex}`);
-            const loadingElement = document.getElementById(`loading-suggestions-${cardIndex}`);
-            const statusElement = document.getElementById(`suggestions-status-${cardIndex}`);
-            
-            // Limpiar contenedores
-            serverButtonsContainer.innerHTML = '';
-            suggestionsGrid.innerHTML = '';
-            
-            // Crear botones para cada servidor
-            imgServers.forEach((server, serverIndex) => {
-                const serverBtn = document.createElement('button');
-                serverBtn.className = 'server-btn';
-                serverBtn.textContent = server.name;
-                serverBtn.dataset.serverIndex = serverIndex;
-                serverBtn.dataset.cardIndex = cardIndex;
-                
-                // Marcar los servidores que requieren API key
-                if (server.requiresKey) {
-                    serverBtn.title = 'Requiere API key para funcionar';
-                    serverBtn.style.opacity = '0.6';
-                    serverBtn.disabled = true;
-                }
-                
-                serverBtn.addEventListener('click', () => {
-                    // Activar este botón
-                    document.querySelectorAll(`#server-buttons-${cardIndex} .server-btn`).forEach(btn => {
-                        btn.classList.remove('active');
-                    });
-                    serverBtn.classList.add('active');
-                    
-                    // Cargar sugerencias de este servidor
-                    loadImageSuggestions(cardIndex, searchTerm, serverIndex);
-                });
-                
-                serverButtonsContainer.appendChild(serverBtn);
-            });
-            
-            // Configurar botón "Cargar más"
-            loadMoreBtn.addEventListener('click', () => {
-                const activeServerBtn = serverButtonsContainer.querySelector('.server-btn.active');
-                if (activeServerBtn) {
-                    const serverIndex = parseInt(activeServerBtn.dataset.serverIndex);
-                    loadImageSuggestions(cardIndex, searchTerm, serverIndex, true);
                 }
             });
-            
-            // Activar el primer servidor que no requiera API key por defecto
-            const firstNonKeyServer = serverButtonsContainer.querySelector('.server-btn:not([disabled])');
-            if (firstNonKeyServer) {
-                firstNonKeyServer.click();
-            }
+        });
+        
+        // Actualizar contador
+        updateImageSelectionCounter();
+    }
+    
+    // Probar una URL de imagen
+    function testImageUrl(cardIndex) {
+        const urlInput = document.getElementById(`image-url-${cardIndex}`);
+        const previewContainer = document.getElementById(`image-preview-${cardIndex}`);
+        const imageUrl = urlInput.value.trim();
+        
+        if (!imageUrl) {
+            alert('Por favor ingresa una URL de imagen.');
+            return;
         }
         
-        // Cargar sugerencias de imágenes desde un servidor específico
-        async function loadImageSuggestions(cardIndex, searchTerm, serverIndex, loadMore = false) {
-            const server = imgServers[serverIndex];
-            const suggestionsGrid = document.getElementById(`suggestions-grid-${cardIndex}`);
-            const loadingElement = document.getElementById(`loading-suggestions-${cardIndex}`);
-            const statusElement = document.getElementById(`suggestions-status-${cardIndex}`);
-            const loadMoreBtn = document.getElementById(`load-more-${cardIndex}`);
-            
-            // Mostrar estado de carga
-            if (!loadMore) {
-                suggestionsGrid.innerHTML = '';
-            }
-            loadingElement.style.display = 'block';
-            statusElement.textContent = 'Cargando...';
-            loadMoreBtn.style.display = 'none';
-            
-            try {
-                let imageUrls = [];
-                
-                // Servidor especial: Lorem Picsum (devuelve URLs directamente)
-                if (server.isDirect) {
-                    imageUrls = await server.url(searchTerm);
-                } 
-                // Servidores normales (requieren fetch)
-                else {
-                    // Nota: Para usar servidores reales necesitarías API keys
-                    // Por ahora, usaremos imágenes de respaldo como demostración
-                    
-                    // Simular delay de red
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    
-                    // Usar imágenes de respaldo según la categoría
-                    const topic = document.getElementById('topic').value.toLowerCase();
-                    let category = 'default';
-                    
-                    if (topic.includes('comida') || topic.includes('food') || topic.includes('alimento')) {
-                        category = 'comida';
-                    } else if (topic.includes('animal') || topic.includes('pet') || topic.includes('mascota')) {
-                        category = 'animales';
-                    } else if (topic.includes('viaje') || topic.includes('travel') || topic.includes('turismo')) {
-                        category = 'viajes';
-                    }
-                    
-                    // Crear algunas URLs de ejemplo basadas en el término de búsqueda
-                    imageUrls = backupImages[category].slice(0, 3);
-                    
-                    // Agregar algunas variaciones
-                    for (let i = 0; i < 2; i++) {
-                        const randomId = Math.floor(Math.random() * 1000);
-                        imageUrls.push(`https://picsum.photos/300/200?random=${randomId}`);
-                    }
-                }
-                
-                // Procesar las URLs
-                const processedUrls = server.processData ? server.processData(imageUrls) : imageUrls;
-                
-                // Mostrar las imágenes
-                if (!loadMore) {
-                    suggestionsGrid.innerHTML = '';
-                }
-                
-                if (processedUrls && processedUrls.length > 0) {
-                    processedUrls.forEach((url, imgIndex) => {
-                        if (!url) return; // Saltar URLs vacías
-                        
-                        const suggestionItem = document.createElement('div');
-                        suggestionItem.className = 'suggestion-item';
-                        suggestionItem.dataset.url = url;
-                        suggestionItem.dataset.server = server.name;
-                        
-                        suggestionItem.innerHTML = `
-                            <img src="${url}" alt="${searchTerm}" class="suggestion-img" onerror="this.src='https://via.placeholder.com/300x200?text=Imagen+no+disponible'">
-                            <div class="suggestion-server">${server.name}</div>
-                        `;
-                        
-                        // Al hacer clic, seleccionar esta imagen
-                        suggestionItem.addEventListener('click', () => {
-                            selectSuggestedImage(cardIndex, url, server.name);
-                        });
-                        
-                        suggestionsGrid.appendChild(suggestionItem);
-                    });
-                    
-                    statusElement.textContent = `${processedUrls.length} imágenes encontradas`;
-                    loadMoreBtn.style.display = 'block';
-                } else {
-                    statusElement.textContent = 'No se encontraron imágenes';
-                    suggestionsGrid.innerHTML = `
-                        <div style="grid-column: 1/-1; text-align: center; padding: 20px; color: #666;">
-                            <i class="fas fa-images" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                            <p>No se encontraron imágenes para "${searchTerm}"</p>
-                            <p><small>Intenta con otro servidor o busca manualmente</small></p>
-                        </div>
-                    `;
-                }
-                
-            } catch (error) {
-                console.error(`Error al cargar imágenes de ${server.name}:`, error);
-                statusElement.textContent = 'Error al cargar';
-                statusElement.style.color = '#e74c3c';
-                
-                suggestionsGrid.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 20px; color: #e74c3c;">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                        <p>Error al cargar imágenes</p>
-                        <p><small>${server.requiresKey ? 'Este servidor requiere API key' : 'Intenta con otro servidor'}</small></p>
-                    </div>
-                `;
-            } finally {
-                loadingElement.style.display = 'none';
-            }
+        // Verificar que sea una URL válida
+        if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+            alert('La URL debe comenzar con http:// o https://');
+            return;
         }
         
-        // Seleccionar una imagen sugerida
-        function selectSuggestedImage(cardIndex, url, serverName) {
-            // Actualizar el campo de URL
-            const urlInput = document.getElementById(`image-url-${cardIndex}`);
-            urlInput.value = url;
-            
-            // Guardar automáticamente
-            saveImageUrlFromSuggestion(cardIndex, url, serverName);
-            
-            // Actualizar previsualización
-            testImageUrl(cardIndex);
-            
-            // Resaltar el elemento seleccionado
-            const suggestionsGrid = document.getElementById(`suggestions-grid-${cardIndex}`);
-            suggestionsGrid.querySelectorAll('.suggestion-item').forEach(item => {
-                item.classList.remove('selected');
-                if (item.dataset.url === url) {
-                    item.classList.add('selected');
-                }
-            });
-            
-            // Mostrar mensaje de confirmación
-            showMessage(`Imagen de ${serverName} seleccionada para "${flashcardsData[cardIndex].target}"`, 'success');
-        }
+        // Mostrar cargando
+        previewContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>Verificando imagen...</p></div>';
+        previewContainer.className = 'image-preview';
         
-        // Guardar una URL de imagen desde sugerencia
-        function saveImageUrlFromSuggestion(cardIndex, url, serverName) {
-            // Guardar la URL
-            selectedImages[cardIndex] = {
-                url: url,
-                timestamp: new Date().toISOString(),
-                source: serverName
-            };
-            
-            // Actualizar estado
-            const statusElement = document.getElementById(`image-status-${cardIndex}`);
-            statusElement.textContent = `✓ Imagen de ${serverName}`;
-            statusElement.className = 'image-status selected';
-            
-            // Actualizar contador
-            updateImageSelectionCounter();
-        }
-        
-        // Probar una URL de imagen
-        function testImageUrl(cardIndex) {
-            const urlInput = document.getElementById(`image-url-${cardIndex}`);
-            const previewContainer = document.getElementById(`image-preview-${cardIndex}`);
-            const imageUrl = urlInput.value.trim();
-            
-            if (!imageUrl) {
-                alert('Por favor ingresa una URL de imagen.');
-                return;
-            }
-            
-            // Verificar que sea una URL válida
-            if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
-                alert('La URL debe comenzar con http:// o https://');
-                return;
-            }
-            
-            // Mostrar cargando
-            previewContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>Verificando imagen...</p></div>';
+        // Crear una imagen para probar si se carga
+        const testImage = new Image();
+        testImage.onload = function() {
+            // La imagen se cargó correctamente
+            previewContainer.innerHTML = `<img src="${imageUrl}" alt="${flashcardsData[cardIndex].target}" onerror="handleImageError(${cardIndex})">`;
             previewContainer.className = 'image-preview';
             
-            // Crear una imagen para probar si se carga
-            const testImage = new Image();
-            testImage.onload = function() {
-                // La imagen se cargó correctamente
-                previewContainer.innerHTML = `<img src="${imageUrl}" alt="${flashcardsData[cardIndex].target}" onerror="handleImageError(${cardIndex})">`;
-                previewContainer.className = 'image-preview';
-                
-                // Mostrar mensaje de éxito
-                const statusElement = document.getElementById(`image-status-${cardIndex}`);
-                statusElement.textContent = '✓ Imagen verificada';
-                statusElement.className = 'image-status selected';
-                
-                // Sugerir guardar si no está guardada
-                if (!selectedImages[cardIndex]) {
-                    setTimeout(() => {
-                        if (confirm('¿Deseas guardar esta imagen para esta palabra?')) {
-                            saveImageUrl(cardIndex);
-                        }
-                    }, 500);
-                }
-            };
+            // Mostrar mensaje de éxito
+            const statusElement = document.getElementById(`image-status-${cardIndex}`);
+            statusElement.textContent = '✓ Imagen verificada';
+            statusElement.className = 'image-status selected';
             
-            testImage.onerror = function() {
-                // La imagen no se pudo cargar
-                previewContainer.innerHTML = `
-                    <i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i>
-                    <p>No se pudo cargar la imagen</p>
-                    <p><small>La URL puede ser incorrecta o la imagen no es accesible.</small></p>
-                    <p><small>Intenta con otra imagen o URL.</small></p>
-                `;
-                previewContainer.className = 'image-preview empty';
-                
-                const statusElement = document.getElementById(`image-status-${cardIndex}`);
-                statusElement.textContent = 'Error de imagen';
-                statusElement.className = 'image-status';
-            };
-            
-            // Establecer un timeout para la carga
+            // Sugerir guardar
             setTimeout(() => {
-                if (!testImage.complete) {
-                    testImage.onerror();
+                if (!selectedImages[cardIndex]) {
+                    alert('Imagen verificada correctamente. Haz clic en "Guardar" para asignarla a esta palabra.');
                 }
-            }, 5000);
-            
-            // Intentar cargar la imagen
-            testImage.src = imageUrl;
-        }
+            }, 500);
+        };
         
-        // Guardar una URL de imagen
-        function saveImageUrl(cardIndex) {
-            const urlInput = document.getElementById(`image-url-${cardIndex}`);
-            const imageUrl = urlInput.value.trim();
+        testImage.onerror = function() {
+            // La imagen no se pudo cargar
+            previewContainer.innerHTML = `
+                <i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i>
+                <p>No se pudo cargar la imagen</p>
+                <p><small>La URL puede ser incorrecta o la imagen no es accesible.</small></p>
+                <p><small>Intenta con otra imagen o URL.</small></p>
+            `;
+            previewContainer.className = 'image-preview empty';
             
-            if (!imageUrl) {
-                alert('Por favor ingresa una URL de imagen antes de guardar.');
-                return;
-            }
-            
-            // Guardar la URL
-            selectedImages[cardIndex] = {
-                url: imageUrl,
-                timestamp: new Date().toISOString(),
-                source: 'manual'
-            };
-            
-            // Actualizar estado
             const statusElement = document.getElementById(`image-status-${cardIndex}`);
-            statusElement.textContent = '✓ Imagen guardada';
-            statusElement.className = 'image-status selected';
-            
-            // Actualizar contador
-            updateImageSelectionCounter();
-            
-            // Mostrar mensaje de confirmación
-            showMessage(`Imagen guardada para "${flashcardsData[cardIndex].target}"`, 'success');
+            statusElement.textContent = 'Error de imagen';
+            statusElement.className = 'image-status';
+        };
+        
+        // Establecer un timeout para la carga
+        setTimeout(() => {
+            if (!testImage.complete) {
+                testImage.onerror();
+            }
+        }, 5000);
+        
+        // Intentar cargar la imagen
+        testImage.src = imageUrl;
+    }
+    
+    // Guardar una URL de imagen
+    function saveImageUrl(cardIndex) {
+        const urlInput = document.getElementById(`image-url-${cardIndex}`);
+        const imageUrl = urlInput.value.trim();
+        
+        if (!imageUrl) {
+            alert('Por favor ingresa una URL de imagen antes de guardar.');
+            return;
         }
         
-        // Manejar error de carga de imagen
-        function handleImageError(cardIndex) {
-            const previewContainer = document.getElementById(`image-preview-${cardIndex}`);
-            
-            // Usar una imagen de respaldo
-            const topic = document.getElementById('topic').value.toLowerCase();
-            let category = 'default';
-            
-            if (topic.includes('comida') || topic.includes('food') || topic.includes('alimento')) {
-                category = 'comida';
-            } else if (topic.includes('animal') || topic.includes('pet') || topic.includes('mascota')) {
-                category = 'animales';
-            } else if (topic.includes('viaje') || topic.includes('travel') || topic.includes('turismo')) {
-                category = 'viajes';
-            }
-            
-            const randomIndex = Math.floor(Math.random() * backupImages[category].length);
-            const backupUrl = backupImages[category][randomIndex];
-            
-            // Actualizar la URL guardada con la de respaldo
-            if (selectedImages[cardIndex]) {
-                selectedImages[cardIndex].url = backupUrl;
-                selectedImages[cardIndex].isBackup = true;
-            }
-            
-            // Mostrar la imagen de respaldo
-            previewContainer.innerHTML = `<img src="${backupUrl}" alt="${flashcardsData[cardIndex].target}">`;
-            
-            // Mostrar advertencia
-            const statusElement = document.getElementById(`image-status-${cardIndex}`);
-            statusElement.textContent = '✓ Imagen de respaldo';
-            statusElement.className = 'image-status selected';
-            
-            console.log(`Imagen no disponible, usando respaldo para: ${flashcardsData[cardIndex].target}`);
+        // Guardar la URL
+        selectedImages[cardIndex] = {
+            url: imageUrl,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Actualizar estado
+        const statusElement = document.getElementById(`image-status-${cardIndex}`);
+        statusElement.textContent = '✓ Imagen guardada';
+        statusElement.className = 'image-status selected';
+        
+        // Actualizar contador
+        updateImageSelectionCounter();
+        
+        // Mostrar mensaje de confirmación
+        showMessage(`Imagen guardada para "${flashcardsData[cardIndex].target}"`, 'success');
+    }
+    
+    // Manejar error de carga de imagen
+    function handleImageError(cardIndex) {
+        const previewContainer = document.getElementById(`image-preview-${cardIndex}`);
+        
+        // Usar una imagen de respaldo
+        const topic = document.getElementById('topic').value.toLowerCase();
+        let category = 'default';
+        
+        if (topic.includes('comida') || topic.includes('food') || topic.includes('alimento')) {
+            category = 'comida';
+        } else if (topic.includes('animal') || topic.includes('pet') || topic.includes('mascota')) {
+            category = 'animales';
+        } else if (topic.includes('viaje') || topic.includes('travel') || topic.includes('turismo')) {
+            category = 'viajes';
         }
         
-        // Actualizar contador de imágenes seleccionadas
-        function updateImageSelectionCounter() {
-            const selectedCount = Object.keys(selectedImages).length;
-            const totalCount = flashcardsData.length;
-            
-            const generateBtn = document.getElementById('generateCards');
-            
-            if (selectedCount === totalCount) {
-                generateBtn.innerHTML = `<i class="fas fa-play-circle"></i> Generar Flashcards (${selectedCount}/${totalCount})`;
-            } else {
-                generateBtn.innerHTML = `<i class="fas fa-play-circle"></i> Generar Flashcards (${selectedCount}/${totalCount} imágenes)`;
-            }
-            
-            // Siempre permitir generar, incluso si no todas tienen imágenes
-            generateBtn.disabled = false;
+        const randomIndex = Math.floor(Math.random() * backupImages[category].length);
+        const backupUrl = backupImages[category][randomIndex];
+        
+        // Actualizar la URL guardada con la de respaldo
+        if (selectedImages[cardIndex]) {
+            selectedImages[cardIndex].url = backupUrl;
+            selectedImages[cardIndex].isBackup = true;
         }
         
-        // Generar las flashcards finales
-        function generateCards() {
-            // Asignar las imágenes seleccionadas a cada flashcard
-            flashcardsData.forEach((card, index) => {
-                if (selectedImages[index]) {
-                    card.imageUrl = selectedImages[index].url;
-                    card.imageBackup = selectedImages[index].isBackup || false;
-                    card.imageSource = selectedImages[index].source || 'manual';
-                } else {
-                    // Si no hay imagen seleccionada, usar una de respaldo
-                    const topic = document.getElementById('topic').value.toLowerCase();
-                    let category = 'default';
-                    
-                    if (topic.includes('comida') || topic.includes('food') || topic.includes('alimento')) {
-                        category = 'comida';
-                    } else if (topic.includes('animal') || topic.includes('pet') || topic.includes('mascota')) {
-                        category = 'animales';
-                    } else if (topic.includes('viaje') || topic.includes('travel') || topic.includes('turismo')) {
-                        category = 'viajes';
-                    }
-                    
-                    const randomIndex = Math.floor(Math.random() * backupImages[category].length);
-                    card.imageUrl = backupImages[category][randomIndex];
-                    card.imageBackup = true;
-                    card.imageSource = 'backup';
+        // Mostrar la imagen de respaldo
+        previewContainer.innerHTML = `<img src="${backupUrl}" alt="${flashcardsData[cardIndex].target}">`;
+        
+        // Mostrar advertencia
+        const statusElement = document.getElementById(`image-status-${cardIndex}`);
+        statusElement.textContent = '✓ Imagen de respaldo';
+        statusElement.className = 'image-status selected';
+        
+        console.log(`Imagen no disponible, usando respaldo para: ${flashcardsData[cardIndex].target}`);
+    }
+    
+    // Actualizar contador de imágenes seleccionadas
+    function updateImageSelectionCounter() {
+        const selectedCount = Object.keys(selectedImages).length;
+        const totalCount = flashcardsData.length;
+        
+        const generateBtn = document.getElementById('generateCards');
+        
+        if (selectedCount === totalCount) {
+            generateBtn.innerHTML = `<i class="fas fa-play-circle"></i> Generar Flashcards (${selectedCount}/${totalCount})`;
+        } else {
+            generateBtn.innerHTML = `<i class="fas fa-play-circle"></i> Generar Flashcards (${selectedCount}/${totalCount} imágenes)`;
+        }
+        
+        // Siempre permitir generar, incluso si no todas tienen imágenes
+        generateBtn.disabled = false;
+    }
+    
+    // Cargar sugerencias de imágenes desde múltiples servidores
+    async function loadImageSuggestions(cardIndex) {
+        const card = flashcardsData[cardIndex];
+        const searchTerm = card.target;
+        const suggestionsGrid = document.getElementById(`suggestions-grid-${cardIndex}`);
+        const loadButton = document.getElementById(`load-suggestions-${cardIndex}`);
+        
+        // Mostrar estado de carga
+        suggestionsGrid.innerHTML = `
+            <div class="suggestion-loading">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p>Buscando imágenes en 5 servidores...</p>
+                <p><small>Esto puede tomar unos segundos</small></p>
+            </div>
+        `;
+        suggestionsGrid.style.display = 'block';
+        
+        // Deshabilitar botón mientras se carga
+        loadButton.disabled = true;
+        loadButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+        
+        try {
+            const suggestions = [];
+            
+            // 1. Unsplash (usando fuente pública como fallback)
+            try {
+                const unsplashImages = await fetchUnsplashImages(searchTerm);
+                suggestions.push(...unsplashImages.map(img => ({...img, source: 'Unsplash'})));
+            } catch (e) {
+                console.log("Unsplash no disponible, usando fallback");
+            }
+            
+            // 2. Pixabay (con clave demo limitada)
+            try {
+                const pixabayImages = await fetchPixabayImages(searchTerm);
+                suggestions.push(...pixabayImages.map(img => ({...img, source: 'Pixabay'})));
+            } catch (e) {
+                console.log("Pixabay no disponible");
+            }
+            
+            // 3. Picsum (siempre disponible, imágenes random)
+            try {
+                const picsumImages = getPicsumImages(searchTerm, 3);
+                suggestions.push(...picsumImages.map(img => ({...img, source: 'Lorem Picsum'})));
+            } catch (e) {
+                console.log("Picsum no disponible");
+            }
+            
+            // 4. Wikimedia Commons
+            try {
+                const wikimediaImages = await fetchWikimediaImages(searchTerm);
+                suggestions.push(...wikimediaImages.map(img => ({...img, source: 'Wikimedia'})));
+            } catch (e) {
+                console.log("Wikimedia no disponible");
+            }
+            
+            // 5. Placeholder con temática
+            try {
+                const themedImages = getThemedPlaceholders(searchTerm, 2);
+                suggestions.push(...themedImages.map(img => ({...img, source: 'Temática'})));
+            } catch (e) {
+                console.log("Placeholder no disponible");
+            }
+            
+            // Filtrar URLs duplicadas
+            const uniqueSuggestions = [];
+            const seenUrls = new Set();
+            
+            suggestions.forEach(suggestion => {
+                if (!seenUrls.has(suggestion.url)) {
+                    seenUrls.add(suggestion.url);
+                    uniqueSuggestions.push(suggestion);
                 }
             });
             
-            // Navegar al paso 4
-            navigateToStep(4);
+            // Mostrar sugerencias
+            displaySuggestions(cardIndex, uniqueSuggestions);
             
-            // Mostrar la primera flashcard
-            showCard(0);
+        } catch (error) {
+            console.error("Error cargando sugerencias:", error);
+            suggestionsGrid.innerHTML = `
+                <div class="suggestion-error">
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    <p>No se pudieron cargar sugerencias</p>
+                    <p><small>${error.message}</small></p>
+                    <button class="btn btn-small" onclick="loadImageSuggestions(${cardIndex})" style="margin-top: 10px;">
+                        <i class="fas fa-redo"></i> Intentar de nuevo
+                    </button>
+                </div>
+            `;
+        } finally {
+            // Restaurar botón
+            loadButton.disabled = false;
+            loadButton.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar Sugerencias';
         }
-        
-        // Mostrar una flashcard específica
-        function showCard(index) {
-            if (index < 0 || index >= flashcardsData.length) return;
+    }
+    
+    // Función para obtener imágenes de Unsplash
+    async function fetchUnsplashImages(query) {
+        try {
+            // Usar API pública de Unsplash (limitada pero funciona sin clave)
+            // Primero intentamos obtener la URL de redirección
+            const response = await fetch(`https://source.unsplash.com/featured/?${encodeURIComponent(query)}`, {
+                method: 'HEAD',
+                redirect: 'follow'
+            });
             
-            const card = flashcardsData[index];
-            const flashcardElement = document.getElementById('flashcard');
+            // Si tenemos una URL, usamos la versión con tamaño específico
+            const imageUrl = `https://source.unsplash.com/featured/300x200/?${encodeURIComponent(query)}`;
             
-            // Restablecer la rotación de la tarjeta
-            flashcardElement.classList.remove('flipped');
+            return [{ 
+                url: imageUrl, 
+                thumbnail: `https://source.unsplash.com/featured/150x100/?${encodeURIComponent(query)}` 
+            }];
+        } catch (error) {
+            // Fallback a imágenes temáticas
+            return getThemedPlaceholders(query, 1);
+        }
+    }
+    
+    // Función para obtener imágenes de Pixabay
+    async function fetchPixabayImages(query) {
+        try {
+            // Usar clave demo (limitada)
+            const response = await fetch(
+                `https://pixabay.com/api/?key=${demoApiKeys.pixabay}&q=${encodeURIComponent(query)}&image_type=photo&per_page=3&safesearch=true`
+            );
             
-            // Actualizar el contenido de la tarjeta
-            document.getElementById('cardWord').textContent = card.target;
-            document.getElementById('cardTranslation').textContent = card.native;
+            const data = await response.json();
             
-            // Usar la imagen seleccionada o una de respaldo
-            const imageUrl = card.imageUrl || backupImages.default[0];
-            const cardImage = document.getElementById('cardImage');
-            const cardImageBack = document.getElementById('cardImageBack');
-            
-            cardImage.src = imageUrl;
-            cardImage.alt = card.target;
-            cardImageBack.src = imageUrl;
-            cardImageBack.alt = card.native;
-            
-            // Mostrar IPA si está disponible y el idioma objetivo es inglés
-            const ipaElement = document.getElementById('cardIpa');
-            const targetLanguage = document.getElementById('targetLanguage').value;
-            
-            if (card.ipa && targetLanguage.toLowerCase() === 'inglés') {
-                ipaElement.textContent = card.ipa;
-                ipaElement.style.display = 'block';
+            if (data.hits && data.hits.length > 0) {
+                return data.hits.map(hit => ({
+                    url: hit.largeImageURL || hit.webformatURL,
+                    thumbnail: hit.previewURL
+                }));
             } else {
-                ipaElement.style.display = 'none';
+                // Si no hay resultados, usar imágenes temáticas
+                return getThemedPlaceholders(query, 2);
             }
-            
-            // Mostrar ejemplo si está disponible
-            const exampleElement = document.getElementById('cardExample');
-            if (card.example) {
-                exampleElement.textContent = card.example;
-                exampleElement.style.display = 'block';
-            } else {
-                exampleElement.style.display = 'none';
-            }
-            
-            // Agregar botones de TTS si está habilitado
-            addTTSButtons(card);
-            
-            // Actualizar el contador
-            currentCardIndex = index;
-            document.getElementById('currentCardIndex').textContent = index + 1;
-            document.getElementById('totalCards').textContent = flashcardsData.length;
-            document.getElementById('cardCounter').textContent = `Flashcard ${index + 1} de ${flashcardsData.length}`;
-            
-            // Actualizar estado de los botones de navegación
-            document.getElementById('prevCard').disabled = index === 0;
-            document.getElementById('nextCard').disabled = index === flashcardsData.length - 1;
+        } catch (error) {
+            // Si falla, devolver imágenes genéricas basadas en el tema
+            return getThemedPlaceholders(query, 2);
         }
-        
-        // Mostrar la siguiente flashcard
-        function showNextCard() {
-            if (currentCardIndex < flashcardsData.length - 1) {
-                showCard(currentCardIndex + 1);
-            }
-        }
-        
-        // Mostrar la flashcard anterior
-        function showPrevCard() {
-            if (currentCardIndex > 0) {
-                showCard(currentCardIndex - 1);
-            }
-        }
-        
-        // Voltear la flashcard
-        function flipCard() {
-            document.getElementById('flashcard').classList.toggle('flipped');
-        }
-        
-        // Reiniciar el proceso
-        function restartProcess() {
-            // Detener cualquier narración en curso
-            if (speechSynthesis) {
-                speechSynthesis.cancel();
-            }
+    }
+    
+    // Función para obtener imágenes de Wikimedia Commons
+    async function fetchWikimediaImages(query) {
+        try {
+            // Usar API de Wikimedia Commons
+            const response = await fetch(
+                `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(query)}&gsrlimit=3&prop=imageinfo&iiprop=url&format=json&origin=*`
+            );
             
-            // Resetear variables
-            flashcardsData = [];
-            currentCardIndex = 0;
-            selectedImages = {};
+            const data = await response.json();
+            const images = [];
             
-            // Limpiar formularios
-            document.getElementById('topic').value = '';
-            document.getElementById('aiResponse').value = '';
-            
-            // Navegar al paso 1
-            navigateToStep(1);
-        }
-        
-        // ========== FUNCIONES TTS ==========
-        
-        // Función para cargar las voces disponibles
-        function loadVoices() {
-            if (!speechSynthesis) return;
-            
-            voices = speechSynthesis.getVoices();
-            
-            // Actualizar opciones de voz si hay voces disponibles
-            if (voices.length > 0) {
-                const voiceSelect = document.getElementById('ttsVoice');
-                const currentVoice = voiceSelect.value;
-                voiceSelect.innerHTML = '';
-                
-                voices.forEach((voice, index) => {
-                    const option = document.createElement('option');
-                    option.value = voice.name;
-                    option.textContent = `${voice.name} (${voice.lang})`;
-                    voiceSelect.appendChild(option);
+            if (data.query && data.query.pages) {
+                Object.values(data.query.pages).forEach(page => {
+                    if (page.imageinfo && page.imageinfo[0]) {
+                        images.push({
+                            url: page.imageinfo[0].url,
+                            thumbnail: page.imageinfo[0].thumburl || page.imageinfo[0].url
+                        });
+                    }
                 });
+            }
+            
+            return images;
+        } catch (error) {
+            return [];
+        }
+    }
+    
+    // Función para obtener imágenes de Picsum
+    function getPicsumImages(query, count) {
+        const images = [];
+        for (let i = 0; i < count; i++) {
+            // Agregar un timestamp único para evitar caché
+            const timestamp = Date.now() + i;
+            images.push({
+                url: `https://picsum.photos/300/200?random=${timestamp}&${encodeURIComponent(query)}`,
+                thumbnail: `https://picsum.photos/150/100?random=${timestamp}&${encodeURIComponent(query)}`
+            });
+        }
+        return images;
+    }
+    
+    // Función para obtener placeholders con temática
+    function getThemedPlaceholders(query, count) {
+        const images = [];
+        
+        // Determinar categoría basada en la palabra
+        const queryLower = query.toLowerCase();
+        let category = 'nature';
+        
+        if (queryLower.includes('food') || queryLower.includes('meal') || 
+            queryLower.includes('fruit') || queryLower.includes('vegetable') ||
+            queryLower.includes('comida') || queryLower.includes('fruta') ||
+            queryLower.includes('verdura') || queryLower.includes('alimento')) {
+            category = 'food';
+        } else if (queryLower.includes('animal') || queryLower.includes('pet') || 
+                  queryLower.includes('bird') || queryLower.includes('fish') ||
+                  queryLower.includes('perro') || queryLower.includes('gato') ||
+                  queryLower.includes('pájaro') || queryLower.includes('pez')) {
+            category = 'animals';
+        } else if (queryLower.includes('city') || queryLower.includes('building') || 
+                  queryLower.includes('street') || queryLower.includes('house') ||
+                  queryLower.includes('ciudad') || queryLower.includes('edificio') ||
+                  queryLower.includes('calle') || queryLower.includes('casa')) {
+            category = 'city';
+        } else if (queryLower.includes('travel') || queryLower.includes('beach') || 
+                  queryLower.includes('mountain') || queryLower.includes('landscape') ||
+                  queryLower.includes('viaje') || queryLower.includes('playa') ||
+                  queryLower.includes('montaña') || queryLower.includes('paisaje')) {
+            category = 'travel';
+        } else if (queryLower.includes('person') || queryLower.includes('people') || 
+                  queryLower.includes('man') || queryLower.includes('woman') ||
+                  queryLower.includes('persona') || queryLower.includes('gente') ||
+                  queryLower.includes('hombre') || queryLower.includes('mujer')) {
+            category = 'people';
+        } else if (queryLower.includes('car') || queryLower.includes('vehicle') || 
+                  queryLower.includes('transport') || queryLower.includes('auto') ||
+                  queryLower.includes('coche') || queryLower.includes('vehículo')) {
+            category = 'transport';
+        } else if (queryLower.includes('book') || queryLower.includes('read') || 
+                  queryLower.includes('library') || queryLower.includes('study') ||
+                  queryLower.includes('libro') || queryLower.includes('leer') ||
+                  queryLower.includes('biblioteca') || queryLower.includes('estudio')) {
+            category = 'education';
+        }
+        
+        for (let i = 0; i < count; i++) {
+            const timestamp = Date.now() + i;
+            images.push({
+                url: `https://picsum.photos/300/200?random=${timestamp}&${category}`,
+                thumbnail: `https://picsum.photos/150/100?random=${timestamp}&${category}`,
+                isPlaceholder: true
+            });
+        }
+        
+        return images;
+    }
+    
+    // Mostrar sugerencias en la cuadrícula
+    function displaySuggestions(cardIndex, suggestions) {
+        const suggestionsGrid = document.getElementById(`suggestions-grid-${cardIndex}`);
+        
+        if (!suggestions || suggestions.length === 0) {
+            suggestionsGrid.innerHTML = `
+                <div class="suggestion-error">
+                    <i class="fas fa-images fa-2x"></i>
+                    <p>No se encontraron sugerencias</p>
+                    <p><small>Intenta con Google/Bing manualmente</small></p>
+                    <button class="btn btn-small" onclick="loadImageSuggestions(${cardIndex})" style="margin-top: 10px;">
+                        <i class="fas fa-redo"></i> Intentar de nuevo
+                    </button>
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '<div class="suggestion-grid">';
+        
+        suggestions.forEach((suggestion, index) => {
+            const isSelected = selectedImages[cardIndex] && 
+                             selectedImages[cardIndex].url === suggestion.url;
+            
+            html += `
+                <div class="suggestion-item ${isSelected ? 'selected' : ''}" 
+                     data-card-index="${cardIndex}"
+                     data-image-url="${suggestion.url}"
+                     data-source="${suggestion.source}"
+                     title="Haz clic para seleccionar (Fuente: ${suggestion.source})">
+                    <img src="${suggestion.thumbnail || suggestion.url}" 
+                         alt="${flashcardsData[cardIndex].target}"
+                         onerror="this.onerror=null; this.src='https://picsum.photos/150/100?random=${index}&${encodeURIComponent(flashcardsData[cardIndex].target)}'">
+                    <div class="suggestion-source">${suggestion.source}</div>
+                    ${isSelected ? '<div style="position: absolute; top: 5px; right: 5px; background: #4CAF50; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px;">✓</div>' : ''}
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        
+        // Botón para cargar más
+        html += `
+            <div class="load-more-btn">
+                <button class="btn btn-small" onclick="loadImageSuggestions(${cardIndex})" 
+                        style="margin-top: 10px;">
+                    <i class="fas fa-sync-alt"></i> Cargar más sugerencias
+                </button>
+                <p style="font-size: 0.8rem; color: #666; margin-top: 5px;">
+                    ${suggestions.length} imágenes encontradas - Haz clic en una para seleccionarla
+                </p>
+            </div>
+        `;
+        
+        suggestionsGrid.innerHTML = html;
+    }
+    
+    // Seleccionar una sugerencia
+    function selectSuggestion(cardIndex, imageUrl, source) {
+        // Actualizar el campo de URL
+        const urlInput = document.getElementById(`image-url-${cardIndex}`);
+        urlInput.value = imageUrl;
+        
+        // Guardar automáticamente
+        selectedImages[cardIndex] = {
+            url: imageUrl,
+            timestamp: new Date().toISOString(),
+            source: source
+        };
+        
+        // Actualizar estado
+        const statusElement = document.getElementById(`image-status-${cardIndex}`);
+        statusElement.textContent = `✓ Imagen de ${source}`;
+        statusElement.className = 'image-status selected';
+        
+        // Actualizar contador
+        updateImageSelectionCounter();
+        
+        // Probar la imagen automáticamente
+        testImageUrl(cardIndex);
+        
+        // Resaltar la sugerencia seleccionada
+        const suggestionItems = document.querySelectorAll(`[data-card-index="${cardIndex}"]`);
+        suggestionItems.forEach(item => {
+            item.classList.remove('selected');
+            if (item.dataset.imageUrl === imageUrl) {
+                item.classList.add('selected');
+            }
+        });
+        
+        // Mostrar mensaje
+        showMessage(`Imagen de ${source} seleccionada para "${flashcardsData[cardIndex].target}"`, 'success');
+    }
+    
+    // Generar las flashcards finales
+    function generateCards() {
+        // Asignar las imágenes seleccionadas a cada flashcard
+        flashcardsData.forEach((card, index) => {
+            if (selectedImages[index]) {
+                card.imageUrl = selectedImages[index].url;
+                card.imageBackup = selectedImages[index].isBackup || false;
+                card.imageSource = selectedImages[index].source || 'Manual';
+            } else {
+                // Si no hay imagen seleccionada, usar una de respaldo
+                const topic = document.getElementById('topic').value.toLowerCase();
+                let category = 'default';
                 
-                // Intentar mantener la voz seleccionada
-                const voiceExists = voices.some(v => v.name === currentVoice);
-                if (voiceExists) {
-                    voiceSelect.value = currentVoice;
-                    ttsSettings.voice = currentVoice;
-                } else if (voices.length > 0) {
-                    voiceSelect.value = voices[0].name;
-                    ttsSettings.voice = voices[0].name;
+                if (topic.includes('comida') || topic.includes('food') || topic.includes('alimento')) {
+                    category = 'comida';
+                } else if (topic.includes('animal') || topic.includes('pet') || topic.includes('mascota')) {
+                    category = 'animales';
+                } else if (topic.includes('viaje') || topic.includes('travel') || topic.includes('turismo')) {
+                    category = 'viajes';
                 }
+                
+                const randomIndex = Math.floor(Math.random() * backupImages[category].length);
+                card.imageUrl = backupImages[category][randomIndex];
+                card.imageBackup = true;
+                card.imageSource = 'Respaldo automático';
             }
+        });
+        
+        // Navegar al paso 4
+        navigateToStep(4);
+        
+        // Mostrar la primera flashcard
+        showCard(0);
+    }
+    
+    // Mostrar una flashcard específica
+    function showCard(index) {
+        if (index < 0 || index >= flashcardsData.length) return;
+        
+        const card = flashcardsData[index];
+        const flashcardElement = document.getElementById('flashcard');
+        
+        // Restablecer la rotación de la tarjeta
+        flashcardElement.classList.remove('flipped');
+        
+        // Actualizar el contenido de la tarjeta
+        document.getElementById('cardWord').textContent = card.target;
+        document.getElementById('cardTranslation').textContent = card.native;
+        
+        // Usar la imagen seleccionada o una de respaldo
+        const imageUrl = card.imageUrl || backupImages.default[0];
+        const cardImage = document.getElementById('cardImage');
+        const cardImageBack = document.getElementById('cardImageBack');
+        
+        cardImage.src = imageUrl;
+        cardImage.alt = card.target;
+        cardImageBack.src = imageUrl;
+        cardImageBack.alt = card.native;
+        
+        // Mostrar IPA si está disponible y el idioma objetivo es inglés
+        const ipaElement = document.getElementById('cardIpa');
+        const targetLanguage = document.getElementById('targetLanguage').value;
+        
+        if (card.ipa && targetLanguage.toLowerCase() === 'inglés') {
+            ipaElement.textContent = card.ipa;
+            ipaElement.style.display = 'block';
+        } else {
+            ipaElement.style.display = 'none';
         }
         
-        // Recargar voces cuando estén disponibles
+        // Mostrar ejemplo si está disponible
+        const exampleElement = document.getElementById('cardExample');
+        if (card.example) {
+            exampleElement.textContent = card.example;
+            exampleElement.style.display = 'block';
+        } else {
+            exampleElement.style.display = 'none';
+        }
+        
+        // Agregar botones de TTS si está habilitado
+        addTTSButtons(card);
+        
+        // Actualizar el contador
+        currentCardIndex = index;
+        document.getElementById('currentCardIndex').textContent = index + 1;
+        document.getElementById('totalCards').textContent = flashcardsData.length;
+        document.getElementById('cardCounter').textContent = `Flashcard ${index + 1} de ${flashcardsData.length}`;
+        
+        // Actualizar estado de los botones de navegación
+        document.getElementById('prevCard').disabled = index === 0;
+        document.getElementById('nextCard').disabled = index === flashcardsData.length - 1;
+    }
+    
+    // Mostrar la siguiente flashcard
+    function showNextCard() {
+        if (currentCardIndex < flashcardsData.length - 1) {
+            showCard(currentCardIndex + 1);
+        }
+    }
+    
+    // Mostrar la flashcard anterior
+    function showPrevCard() {
+        if (currentCardIndex > 0) {
+            showCard(currentCardIndex - 1);
+        }
+    }
+    
+    // Voltear la flashcard
+    function flipCard() {
+        document.getElementById('flashcard').classList.toggle('flipped');
+    }
+    
+    // Reiniciar el proceso
+    function restartProcess() {
+        // Detener cualquier narración en curso
         if (speechSynthesis) {
-            speechSynthesis.onvoiceschanged = loadVoices;
-        }
-        
-        // Función para alternar TTS
-        function toggleTTS() {
-            ttsEnabled = document.getElementById('ttsEnabled').checked;
-            const ttsSettingsDiv = document.getElementById('ttsSettings');
-            
-            if (ttsEnabled) {
-                ttsSettingsDiv.style.opacity = '1';
-                ttsSettingsDiv.style.pointerEvents = 'all';
-            } else {
-                ttsSettingsDiv.style.opacity = '0.6';
-                ttsSettingsDiv.style.pointerEvents = 'none';
-            }
-        }
-        
-        // Función para actualizar configuraciones de TTS
-        function updateTTSSettings() {
-            ttsSettings = {
-                voice: document.getElementById('ttsVoice').value,
-                rate: parseFloat(document.getElementById('ttsRate').value),
-                pitch: parseFloat(document.getElementById('ttsPitch').value),
-                volume: parseFloat(document.getElementById('ttsVolume').value)
-            };
-            
-            // Actualizar valores mostrados
-            document.getElementById('ttsRateValue').textContent = ttsSettings.rate.toFixed(1);
-            document.getElementById('ttsPitchValue').textContent = ttsSettings.pitch.toFixed(1);
-            document.getElementById('ttsVolumeValue').textContent = ttsSettings.volume.toFixed(1);
-        }
-        
-        // Función para probar TTS
-        function testTTS() {
-            if (!ttsEnabled || !speechSynthesis) return;
-            
-            const testText = document.getElementById('ttsTest').value || "Hello, welcome to language learning";
-            speakText(testText, false);
-        }
-        
-        // Función principal para hablar texto
-        function speakText(text, isCardWord = true) {
-            if (!ttsEnabled || !speechSynthesis) return;
-            
-            // Cancelar cualquier narración en curso
             speechSynthesis.cancel();
-            
-            // Crear nuevo utterance
-            const utterance = new SpeechSynthesisUtterance(text);
-            
-            // Configurar parámetros
-            utterance.rate = ttsSettings.rate;
-            utterance.pitch = ttsSettings.pitch;
-            utterance.volume = ttsSettings.volume;
-            
-            // Buscar la voz seleccionada
-            const selectedVoice = voices.find(voice => voice.name === ttsSettings.voice);
-            if (selectedVoice) {
-                utterance.voice = selectedVoice;
-            }
-            
-            // Para palabras de flashcards, ajustar el idioma automáticamente
-            if (isCardWord) {
-                const targetLanguage = document.getElementById('targetLanguage').value;
-                if (targetLanguage === 'español') {
-                    utterance.lang = 'es-ES';
-                } else if (targetLanguage === 'francés') {
-                    utterance.lang = 'fr-FR';
-                } else if (targetLanguage === 'alemán') {
-                    utterance.lang = 'de-DE';
-                } else if (targetLanguage === 'italiano') {
-                    utterance.lang = 'it-IT';
-                } else if (targetLanguage === 'portugués') {
-                    utterance.lang = 'pt-BR';
-                } else if (targetLanguage === 'chino') {
-                    utterance.lang = 'zh-CN';
-                } else if (targetLanguage === 'japonés') {
-                    utterance.lang = 'ja-JP';
-                } else {
-                    utterance.lang = 'en-US'; // Por defecto inglés
-                }
-            }
-            
-            // Reproducir
-            speechSynthesis.speak(utterance);
         }
         
-        // Función para agregar botones de TTS a las flashcards
-        function addTTSButtons(card) {
-            // Eliminar botones existentes
-            const existingButtons = document.querySelectorAll('.tts-button');
-            existingButtons.forEach(button => button.remove());
+        // Resetear variables
+        flashcardsData = [];
+        currentCardIndex = 0;
+        selectedImages = {};
+        
+        // Limpiar formularios
+        document.getElementById('topic').value = '';
+        document.getElementById('aiResponse').value = '';
+        
+        // Navegar al paso 1
+        navigateToStep(1);
+    }
+    
+    // ========== FUNCIONES TTS ==========
+    
+    // Función para cargar las voces disponibles
+    function loadVoices() {
+        if (!speechSynthesis) return;
+        
+        voices = speechSynthesis.getVoices();
+        
+        // Actualizar opciones de voz si hay voces disponibles
+        if (voices.length > 0) {
+            const voiceSelect = document.getElementById('ttsVoice');
+            const currentVoice = voiceSelect.value;
+            voiceSelect.innerHTML = '';
             
-            if (!ttsEnabled || !speechSynthesis) return;
+            voices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.value = voice.name;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                voiceSelect.appendChild(option);
+            });
             
-            // Crear botón para el frente de la tarjeta (pronunciar palabra en idioma objetivo)
-            const frontButton = document.createElement('button');
-            frontButton.className = 'tts-button';
-            frontButton.innerHTML = '<i class="fas fa-volume-up"></i>';
-            frontButton.title = `Pronunciar: ${card.target}`;
-            frontButton.onclick = (e) => {
-                e.stopPropagation(); // Prevenir que se voltee la tarjeta
-                speakText(card.target);
-            };
-            
-            // Crear botón para el reverso de la tarjeta (pronunciar traducción)
-            const backButton = document.createElement('button');
-            backButton.className = 'tts-button';
-            backButton.innerHTML = '<i class="fas fa-volume-up"></i>';
-            backButton.title = `Pronunciar: ${card.native}`;
-            backButton.onclick = (e) => {
-                e.stopPropagation(); // Prevenir que se voltee la tarjeta
-                speakText(card.native);
-            };
-            
-            // Agregar botones a las caras de la tarjeta
-            const frontFace = document.querySelector('.flashcard-front');
-            const backFace = document.querySelector('.flashcard-back');
-            
-            frontFace.appendChild(frontButton);
-            backFace.appendChild(backButton);
+            // Intentar mantener la voz seleccionada
+            const voiceExists = voices.some(v => v.name === currentVoice);
+            if (voiceExists) {
+                voiceSelect.value = currentVoice;
+                ttsSettings.voice = currentVoice;
+            } else if (voices.length > 0) {
+                voiceSelect.value = voices[0].name;
+                ttsSettings.voice = voices[0].name;
+            }
+        }
+    }
+    
+    // Recargar voces cuando estén disponibles
+    if (speechSynthesis) {
+        speechSynthesis.onvoiceschanged = loadVoices;
+    }
+    
+    // Función para alternar TTS
+    function toggleTTS() {
+        ttsEnabled = document.getElementById('ttsEnabled').checked;
+        const ttsSettingsDiv = document.getElementById('ttsSettings');
+        
+        if (ttsEnabled) {
+            ttsSettingsDiv.style.opacity = '1';
+            ttsSettingsDiv.style.pointerEvents = 'all';
+        } else {
+            ttsSettingsDiv.style.opacity = '0.6';
+            ttsSettingsDiv.style.pointerEvents = 'none';
+        }
+    }
+    
+    // Función para actualizar configuraciones de TTS
+    function updateTTSSettings() {
+        ttsSettings = {
+            voice: document.getElementById('ttsVoice').value,
+            rate: parseFloat(document.getElementById('ttsRate').value),
+            pitch: parseFloat(document.getElementById('ttsPitch').value),
+            volume: parseFloat(document.getElementById('ttsVolume').value)
+        };
+        
+        // Actualizar valores mostrados
+        document.getElementById('ttsRateValue').textContent = ttsSettings.rate.toFixed(1);
+        document.getElementById('ttsPitchValue').textContent = ttsSettings.pitch.toFixed(1);
+        document.getElementById('ttsVolumeValue').textContent = ttsSettings.volume.toFixed(1);
+    }
+    
+    // Función para probar TTS
+    function testTTS() {
+        if (!ttsEnabled || !speechSynthesis) return;
+        
+        const testText = document.getElementById('ttsTest').value || "Hello, welcome to language learning";
+        speakText(testText, false);
+    }
+    
+    // Función principal para hablar texto
+    function speakText(text, isCardWord = true) {
+        if (!ttsEnabled || !speechSynthesis) return;
+        
+        // Cancelar cualquier narración en curso
+        speechSynthesis.cancel();
+        
+        // Crear nuevo utterance
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Configurar parámetros
+        utterance.rate = ttsSettings.rate;
+        utterance.pitch = ttsSettings.pitch;
+        utterance.volume = ttsSettings.volume;
+        
+        // Buscar la voz seleccionada
+        const selectedVoice = voices.find(voice => voice.name === ttsSettings.voice);
+        if (selectedVoice) {
+            utterance.voice = selectedVoice;
         }
         
-        // Función para pronunciar la tarjeta actual
-        function speakCurrentCard() {
-            if (!ttsEnabled || !speechSynthesis || !flashcardsData[currentCardIndex]) return;
-            
-            const card = flashcardsData[currentCardIndex];
-            const flashcard = document.getElementById('flashcard');
-            
-            // Determinar qué texto pronunciar según el lado de la tarjeta
-            if (flashcard.classList.contains('flipped')) {
-                // Si está volteada, pronunciar la traducción
-                speakText(card.native);
+        // Para palabras de flashcards, ajustar el idioma automáticamente
+        if (isCardWord) {
+            const targetLanguage = document.getElementById('targetLanguage').value;
+            if (targetLanguage === 'español') {
+                utterance.lang = 'es-ES';
+            } else if (targetLanguage === 'francés') {
+                utterance.lang = 'fr-FR';
+            } else if (targetLanguage === 'alemán') {
+                utterance.lang = 'de-DE';
+            } else if (targetLanguage === 'italiano') {
+                utterance.lang = 'it-IT';
+            } else if (targetLanguage === 'portugués') {
+                utterance.lang = 'pt-BR';
+            } else if (targetLanguage === 'chino') {
+                utterance.lang = 'zh-CN';
+            } else if (targetLanguage === 'japonés') {
+                utterance.lang = 'ja-JP';
             } else {
-                // Si no está volteada, pronunciar la palabra en el idioma objetivo
-                speakText(card.target);
+                utterance.lang = 'en-US'; // Por defecto inglés
             }
         }
-        // ========== FIN FUNCIONES TTS ==========
-    </script>
+        
+        // Reproducir
+        speechSynthesis.speak(utterance);
+    }
+    
+    // Función para agregar botones de TTS a las flashcards
+    function addTTSButtons(card) {
+        // Eliminar botones existentes
+        const existingButtons = document.querySelectorAll('.tts-button');
+        existingButtons.forEach(button => button.remove());
+        
+        if (!ttsEnabled || !speechSynthesis) return;
+        
+        // Crear botón para el frente de la tarjeta (pronunciar palabra en idioma objetivo)
+        const frontButton = document.createElement('button');
+        frontButton.className = 'tts-button';
+        frontButton.innerHTML = '<i class="fas fa-volume-up"></i>';
+        frontButton.title = `Pronunciar: ${card.target}`;
+        frontButton.onclick = (e) => {
+            e.stopPropagation(); // Prevenir que se voltee la tarjeta
+            speakText(card.target);
+        };
+        
+        // Crear botón para el reverso de la tarjeta (pronunciar traducción)
+        const backButton = document.createElement('button');
+        backButton.className = 'tts-button';
+        backButton.innerHTML = '<i class="fas fa-volume-up"></i>';
+        backButton.title = `Pronunciar: ${card.native}`;
+        backButton.onclick = (e) => {
+            e.stopPropagation(); // Prevenir que se voltee la tarjeta
+            speakText(card.native);
+        };
+        
+        // Agregar botones a las caras de la tarjeta
+        const frontFace = document.querySelector('.flashcard-front');
+        const backFace = document.querySelector('.flashcard-back');
+        
+        frontFace.appendChild(frontButton);
+        backFace.appendChild(backButton);
+    }
+    
+    // Función para pronunciar la tarjeta actual
+    function speakCurrentCard() {
+        if (!ttsEnabled || !speechSynthesis || !flashcardsData[currentCardIndex]) return;
+        
+        const card = flashcardsData[currentCardIndex];
+        const flashcard = document.getElementById('flashcard');
+        
+        // Determinar qué texto pronunciar según el lado de la tarjeta
+        if (flashcard.classList.contains('flipped')) {
+            // Si está volteada, pronunciar la traducción
+            speakText(card.native);
+        } else {
+            // Si no está volteada, pronunciar la palabra en el idioma objetivo
+            speakText(card.target);
+        }
+    }
+    // ========== FIN FUNCIONES TTS ==========
+</script>
 </body>
 </html>

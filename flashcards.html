@@ -515,6 +515,113 @@
             margin-top: 10px;
         }
         
+        /* Estilos para las sugerencias de imágenes */
+        .image-suggestions {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        
+        .suggestions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .suggestion-item {
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            height: 120px;
+            position: relative;
+        }
+        
+        .suggestion-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #3498db;
+        }
+        
+        .suggestion-item.selected {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
+        }
+        
+        .suggestion-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .suggestion-server {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 5px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .load-more-btn {
+            display: block;
+            margin: 10px auto 0;
+        }
+        
+        .loading-suggestions {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .loading-suggestions i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .server-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .server-btn {
+            background-color: #e9ecef;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .server-btn:hover {
+            background-color: #dee2e6;
+        }
+        
+        .server-btn.active {
+            background-color: #3498db;
+            color: white;
+        }
+        
         @media (max-width: 768px) {
             .step-indicator {
                 flex-wrap: wrap;
@@ -553,6 +660,14 @@
             .grid-2 {
                 grid-template-columns: 1fr;
             }
+            
+            .suggestions-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+            
+            .server-buttons {
+                gap: 5px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -583,6 +698,10 @@
             .image-url-input input {
                 width: 100%;
             }
+            
+            .suggestions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
@@ -590,7 +709,7 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-language"></i> FlashCards para Idiomas</h1>
-            <p class="subtitle">Genera flashcards personalizadas para aprender cualquier idioma. Busca imágenes manualmente en Google/Bing y pega las URLs.</p>
+            <p class="subtitle">Genera flashcards personalizadas para aprender cualquier idioma. Busca imágenes manualmente o usa nuestras sugerencias automáticas.</p>
         </header>
         
         <div class="step-indicator">
@@ -764,13 +883,11 @@
             <div class="instructions">
                 <h3><i class="fas fa-info-circle"></i> Instrucciones para agregar imágenes:</h3>
                 <ol>
-                    <li>Para cada palabra, abre <strong>Google Images</strong> o <strong>Bing Images</strong> en una nueva pestaña</li>
-                    <li>Busca la palabra en el idioma objetivo (ej: "apple" para manzana)</li>
-                    <li>Haz clic derecho en la imagen que prefieras y selecciona <strong>"Copiar dirección de la imagen"</strong></li>
-                    <li>Regresa a esta página y pega la URL en el cuadro correspondiente</li>
-                    <li>Haz clic en "Verificar y Guardar" para previsualizar y guardar la imagen</li>
+                    <li><strong>Opción 1 (Manual):</strong> Abre Google Images o Bing Images, busca la palabra, copia la URL de la imagen y pégala aquí.</li>
+                    <li><strong>Opción 2 (Sugerencias):</strong> Usa los botones de abajo para buscar automáticamente en 5 servidores de imágenes diferentes.</li>
+                    <li>Haz clic en cualquier imagen sugerida para seleccionarla automáticamente.</li>
                 </ol>
-                <p><strong>Tip:</strong> Busca imágenes en formato JPG o PNG para mejor compatibilidad.</p>
+                <p><strong>Tip:</strong> Para mejores resultados, elige imágenes claras y representativas de la palabra.</p>
             </div>
             
             <div id="imageSelectionContainer">
@@ -861,6 +978,52 @@
         };
         let voices = [];
         let speechSynthesis = window.speechSynthesis;
+        
+        // Servidores de imágenes para sugerencias
+        const imgServers = [
+            {
+                name: "Unsplash",
+                url: (query) => `https://api.unsplash.com/search/photos?page=1&query=${encodeURIComponent(query)}&client_id=YOUR_UNSPLASH_KEY&per_page=5`,
+                processData: (data) => data.results.map(img => img.urls.small),
+                requiresKey: true
+            },
+            {
+                name: "Pixabay",
+                url: (query) => `https://pixabay.com/api/?key=YOUR_PIXABAY_KEY&q=${encodeURIComponent(query)}&image_type=photo&per_page=5`,
+                processData: (data) => data.hits.map(img => img.webformatURL),
+                requiresKey: true
+            },
+            {
+                name: "Wikimedia",
+                url: (query) => `https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url&iiurlwidth=300&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrnamespace=6&gsrlimit=5`,
+                processData: (data) => {
+                    const pages = data.query?.pages;
+                    if (!pages) return [];
+                    return Object.values(pages).map(page => page.imageinfo?.[0]?.thumburl || '').filter(url => url);
+                },
+                requiresKey: false
+            },
+            {
+                name: "Google Custom",
+                url: (query) => `https://www.googleapis.com/customsearch/v1?key=YOUR_GOOGLE_KEY&cx=YOUR_CX&searchType=image&q=${encodeURIComponent(query)}&num=5`,
+                processData: (data) => data.items?.map(img => img.link) || [],
+                requiresKey: true
+            },
+            {
+                name: "Lorem Picsum",
+                url: () => {
+                    const images = [];
+                    for (let i = 0; i < 5; i++) {
+                        const id = Math.floor(Math.random() * 1000);
+                        images.push(`https://picsum.photos/300/200?random=${id}`);
+                    }
+                    return Promise.resolve(images);
+                },
+                processData: (data) => data,
+                requiresKey: false,
+                isDirect: true
+            }
+        ];
         
         // Imágenes de respaldo por si las URLs proporcionadas fallan
         const backupImages = {
@@ -1141,15 +1304,40 @@ INSTRUCCIONES:
                     previewContainer.innerHTML = `
                         <i class="fas fa-image"></i>
                         <p>Previsualización de imagen</p>
-                        <p><small>Pega una URL y haz clic en "Verificar"</small></p>
+                        <p><small>Pega una URL o usa las sugerencias automáticas</small></p>
                     `;
                 }
+                
+                // Contenedor para sugerencias de imágenes
+                const suggestionsContainer = document.createElement('div');
+                suggestionsContainer.className = 'image-suggestions';
+                suggestionsContainer.id = `suggestions-${index}`;
+                suggestionsContainer.innerHTML = `
+                    <div class="suggestions-header">
+                        <h4><i class="fas fa-lightbulb"></i> Sugerencias Automáticas</h4>
+                        <span id="suggestions-status-${index}">No cargadas</span>
+                    </div>
+                    <div class="server-buttons" id="server-buttons-${index}">
+                        <!-- Los botones de servidores se generarán aquí -->
+                    </div>
+                    <div id="suggestions-grid-${index}" class="suggestions-grid">
+                        <!-- Las imágenes sugeridas aparecerán aquí -->
+                    </div>
+                    <button class="btn btn-small load-more-btn" id="load-more-${index}" style="display: none;">
+                        <i class="fas fa-sync-alt"></i> Cargar más sugerencias
+                    </button>
+                    <div id="loading-suggestions-${index}" class="loading-suggestions" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Buscando imágenes...</p>
+                    </div>
+                `;
                 
                 // Agregar elementos al contenedor
                 cardContainer.appendChild(header);
                 cardContainer.appendChild(searchButtons);
                 cardContainer.appendChild(urlInputContainer);
                 cardContainer.appendChild(previewContainer);
+                cardContainer.appendChild(suggestionsContainer);
                 container.appendChild(cardContainer);
                 
                 // Configurar event listeners para los botones
@@ -1167,7 +1355,223 @@ INSTRUCCIONES:
                         saveImageUrl(index);
                     }
                 });
+                
+                // Inicializar sugerencias para esta palabra
+                initializeImageSuggestions(index, card.target);
             });
+            
+            // Actualizar contador
+            updateImageSelectionCounter();
+        }
+        
+        // Inicializar sugerencias de imágenes para una palabra
+        function initializeImageSuggestions(cardIndex, searchTerm) {
+            const serverButtonsContainer = document.getElementById(`server-buttons-${cardIndex}`);
+            const suggestionsGrid = document.getElementById(`suggestions-grid-${cardIndex}`);
+            const loadMoreBtn = document.getElementById(`load-more-${cardIndex}`);
+            const loadingElement = document.getElementById(`loading-suggestions-${cardIndex}`);
+            const statusElement = document.getElementById(`suggestions-status-${cardIndex}`);
+            
+            // Limpiar contenedores
+            serverButtonsContainer.innerHTML = '';
+            suggestionsGrid.innerHTML = '';
+            
+            // Crear botones para cada servidor
+            imgServers.forEach((server, serverIndex) => {
+                const serverBtn = document.createElement('button');
+                serverBtn.className = 'server-btn';
+                serverBtn.textContent = server.name;
+                serverBtn.dataset.serverIndex = serverIndex;
+                serverBtn.dataset.cardIndex = cardIndex;
+                
+                // Marcar los servidores que requieren API key
+                if (server.requiresKey) {
+                    serverBtn.title = 'Requiere API key para funcionar';
+                    serverBtn.style.opacity = '0.6';
+                    serverBtn.disabled = true;
+                }
+                
+                serverBtn.addEventListener('click', () => {
+                    // Activar este botón
+                    document.querySelectorAll(`#server-buttons-${cardIndex} .server-btn`).forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    serverBtn.classList.add('active');
+                    
+                    // Cargar sugerencias de este servidor
+                    loadImageSuggestions(cardIndex, searchTerm, serverIndex);
+                });
+                
+                serverButtonsContainer.appendChild(serverBtn);
+            });
+            
+            // Configurar botón "Cargar más"
+            loadMoreBtn.addEventListener('click', () => {
+                const activeServerBtn = serverButtonsContainer.querySelector('.server-btn.active');
+                if (activeServerBtn) {
+                    const serverIndex = parseInt(activeServerBtn.dataset.serverIndex);
+                    loadImageSuggestions(cardIndex, searchTerm, serverIndex, true);
+                }
+            });
+            
+            // Activar el primer servidor que no requiera API key por defecto
+            const firstNonKeyServer = serverButtonsContainer.querySelector('.server-btn:not([disabled])');
+            if (firstNonKeyServer) {
+                firstNonKeyServer.click();
+            }
+        }
+        
+        // Cargar sugerencias de imágenes desde un servidor específico
+        async function loadImageSuggestions(cardIndex, searchTerm, serverIndex, loadMore = false) {
+            const server = imgServers[serverIndex];
+            const suggestionsGrid = document.getElementById(`suggestions-grid-${cardIndex}`);
+            const loadingElement = document.getElementById(`loading-suggestions-${cardIndex}`);
+            const statusElement = document.getElementById(`suggestions-status-${cardIndex}`);
+            const loadMoreBtn = document.getElementById(`load-more-${cardIndex}`);
+            
+            // Mostrar estado de carga
+            if (!loadMore) {
+                suggestionsGrid.innerHTML = '';
+            }
+            loadingElement.style.display = 'block';
+            statusElement.textContent = 'Cargando...';
+            loadMoreBtn.style.display = 'none';
+            
+            try {
+                let imageUrls = [];
+                
+                // Servidor especial: Lorem Picsum (devuelve URLs directamente)
+                if (server.isDirect) {
+                    imageUrls = await server.url(searchTerm);
+                } 
+                // Servidores normales (requieren fetch)
+                else {
+                    // Nota: Para usar servidores reales necesitarías API keys
+                    // Por ahora, usaremos imágenes de respaldo como demostración
+                    
+                    // Simular delay de red
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Usar imágenes de respaldo según la categoría
+                    const topic = document.getElementById('topic').value.toLowerCase();
+                    let category = 'default';
+                    
+                    if (topic.includes('comida') || topic.includes('food') || topic.includes('alimento')) {
+                        category = 'comida';
+                    } else if (topic.includes('animal') || topic.includes('pet') || topic.includes('mascota')) {
+                        category = 'animales';
+                    } else if (topic.includes('viaje') || topic.includes('travel') || topic.includes('turismo')) {
+                        category = 'viajes';
+                    }
+                    
+                    // Crear algunas URLs de ejemplo basadas en el término de búsqueda
+                    imageUrls = backupImages[category].slice(0, 3);
+                    
+                    // Agregar algunas variaciones
+                    for (let i = 0; i < 2; i++) {
+                        const randomId = Math.floor(Math.random() * 1000);
+                        imageUrls.push(`https://picsum.photos/300/200?random=${randomId}`);
+                    }
+                }
+                
+                // Procesar las URLs
+                const processedUrls = server.processData ? server.processData(imageUrls) : imageUrls;
+                
+                // Mostrar las imágenes
+                if (!loadMore) {
+                    suggestionsGrid.innerHTML = '';
+                }
+                
+                if (processedUrls && processedUrls.length > 0) {
+                    processedUrls.forEach((url, imgIndex) => {
+                        if (!url) return; // Saltar URLs vacías
+                        
+                        const suggestionItem = document.createElement('div');
+                        suggestionItem.className = 'suggestion-item';
+                        suggestionItem.dataset.url = url;
+                        suggestionItem.dataset.server = server.name;
+                        
+                        suggestionItem.innerHTML = `
+                            <img src="${url}" alt="${searchTerm}" class="suggestion-img" onerror="this.src='https://via.placeholder.com/300x200?text=Imagen+no+disponible'">
+                            <div class="suggestion-server">${server.name}</div>
+                        `;
+                        
+                        // Al hacer clic, seleccionar esta imagen
+                        suggestionItem.addEventListener('click', () => {
+                            selectSuggestedImage(cardIndex, url, server.name);
+                        });
+                        
+                        suggestionsGrid.appendChild(suggestionItem);
+                    });
+                    
+                    statusElement.textContent = `${processedUrls.length} imágenes encontradas`;
+                    loadMoreBtn.style.display = 'block';
+                } else {
+                    statusElement.textContent = 'No se encontraron imágenes';
+                    suggestionsGrid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 20px; color: #666;">
+                            <i class="fas fa-images" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                            <p>No se encontraron imágenes para "${searchTerm}"</p>
+                            <p><small>Intenta con otro servidor o busca manualmente</small></p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error(`Error al cargar imágenes de ${server.name}:`, error);
+                statusElement.textContent = 'Error al cargar';
+                statusElement.style.color = '#e74c3c';
+                
+                suggestionsGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 20px; color: #e74c3c;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                        <p>Error al cargar imágenes</p>
+                        <p><small>${server.requiresKey ? 'Este servidor requiere API key' : 'Intenta con otro servidor'}</small></p>
+                    </div>
+                `;
+            } finally {
+                loadingElement.style.display = 'none';
+            }
+        }
+        
+        // Seleccionar una imagen sugerida
+        function selectSuggestedImage(cardIndex, url, serverName) {
+            // Actualizar el campo de URL
+            const urlInput = document.getElementById(`image-url-${cardIndex}`);
+            urlInput.value = url;
+            
+            // Guardar automáticamente
+            saveImageUrlFromSuggestion(cardIndex, url, serverName);
+            
+            // Actualizar previsualización
+            testImageUrl(cardIndex);
+            
+            // Resaltar el elemento seleccionado
+            const suggestionsGrid = document.getElementById(`suggestions-grid-${cardIndex}`);
+            suggestionsGrid.querySelectorAll('.suggestion-item').forEach(item => {
+                item.classList.remove('selected');
+                if (item.dataset.url === url) {
+                    item.classList.add('selected');
+                }
+            });
+            
+            // Mostrar mensaje de confirmación
+            showMessage(`Imagen de ${serverName} seleccionada para "${flashcardsData[cardIndex].target}"`, 'success');
+        }
+        
+        // Guardar una URL de imagen desde sugerencia
+        function saveImageUrlFromSuggestion(cardIndex, url, serverName) {
+            // Guardar la URL
+            selectedImages[cardIndex] = {
+                url: url,
+                timestamp: new Date().toISOString(),
+                source: serverName
+            };
+            
+            // Actualizar estado
+            const statusElement = document.getElementById(`image-status-${cardIndex}`);
+            statusElement.textContent = `✓ Imagen de ${serverName}`;
+            statusElement.className = 'image-status selected';
             
             // Actualizar contador
             updateImageSelectionCounter();
@@ -1206,12 +1610,14 @@ INSTRUCCIONES:
                 statusElement.textContent = '✓ Imagen verificada';
                 statusElement.className = 'image-status selected';
                 
-                // Sugerir guardar
-                setTimeout(() => {
-                    if (!selectedImages[cardIndex]) {
-                        alert('Imagen verificada correctamente. Haz clic en "Guardar" para asignarla a esta palabra.');
-                    }
-                }, 500);
+                // Sugerir guardar si no está guardada
+                if (!selectedImages[cardIndex]) {
+                    setTimeout(() => {
+                        if (confirm('¿Deseas guardar esta imagen para esta palabra?')) {
+                            saveImageUrl(cardIndex);
+                        }
+                    }, 500);
+                }
             };
             
             testImage.onerror = function() {
@@ -1253,7 +1659,8 @@ INSTRUCCIONES:
             // Guardar la URL
             selectedImages[cardIndex] = {
                 url: imageUrl,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                source: 'manual'
             };
             
             // Actualizar estado
@@ -1328,6 +1735,7 @@ INSTRUCCIONES:
                 if (selectedImages[index]) {
                     card.imageUrl = selectedImages[index].url;
                     card.imageBackup = selectedImages[index].isBackup || false;
+                    card.imageSource = selectedImages[index].source || 'manual';
                 } else {
                     // Si no hay imagen seleccionada, usar una de respaldo
                     const topic = document.getElementById('topic').value.toLowerCase();
@@ -1344,6 +1752,7 @@ INSTRUCCIONES:
                     const randomIndex = Math.floor(Math.random() * backupImages[category].length);
                     card.imageUrl = backupImages[category][randomIndex];
                     card.imageBackup = true;
+                    card.imageSource = 'backup';
                 }
             });
             

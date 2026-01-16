@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlashCards para Idiomas - Sistema de Imágenes Manual</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto 40px;
+        }
+        
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: rgba(255, 255, 255, 0.3);
+            z-index: 1;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+        }
+        
+        .step-circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 8px;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .step.active .step-circle {
+            background-color: #4CAF50;
+            border-color: #4CAF50;
+            transform: scale(1.1);
+        }
+        
+        .step-label {
+            color: white;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+        
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn:hover {
+            background-color: #3d8b40;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        .btn-secondary {
+            background-color: #3498db;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-large {
+            padding: 16px 30px;
+            font-size: 1.1rem;
+        }
+        
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+        
+        .flex-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .text-area {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.95rem;
+            resize: vertical;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .message.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .image-search-container {
+            margin-top: 30px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        .image-search-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .image-url-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            align-items: center;
+        }
+        
+        .image-url-input input {
+            flex: 1;
+        }
+        
+        .image-preview {
+            width: 100%;
+            max-width: 300px;
+            height: 200px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            margin: 15px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background-color: #f8f9fa;
+        }
+        
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .image-preview.empty {
+            flex-direction: column;
+            color: #666;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .image-preview.empty i {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+        
+        .instructions {
+            background-color: #e8f4fc;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .search-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        
+        .search-buttons .btn {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .image-status {
+            font-weight: bold;
+            padding: 5px 15px;
+            border-radius: 20px;
+            background: #f0f0f0;
+        }
+        
+        .image-status.selected {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .flashcard-container {
+            perspective: 1000px;
+            height: 400px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+        
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+        
+        .flashcard-front {
+            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+            color: white;
+        }
+        
+        .flashcard-back {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            transform: rotateY(180deg);
+            text-align: center;
+        }
+        
+        .word {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .ipa {
+            font-size: 1.5rem;
+            font-style: italic;
+            margin-bottom: 10px;
+            color: #f1c40f;
+        }
+        
+        .translation {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .image-container {
+            width: 100%;
+            height: 200px;
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+        
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .flashcard-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .progress {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .card-counter {
+            color: white;
+            text-align: center;
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
+        
+        .step-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        /* Estilos TTS */
+        .tts-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .tts-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .flashcard-front .tts-button, .flashcard-back .tts-button {
+            top: 15px;
+            right: 15px;
+            width: 45px;
+            height: 45px;
+            font-size: 1.3rem;
+        }
+
+        .tts-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .tts-controls label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 0;
+        }
+
+        /* Estilo para los sliders */
+        input[type="range"] {
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .tts-settings {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #dee2e6;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .step-indicator {
+                flex-wrap: wrap;
+            }
+            
+            .step {
+                margin-bottom: 15px;
+                flex: 0 0 33%;
+            }
+            
+            .flashcard-container {
+                height: 350px;
+            }
+            
+            .word {
+                font-size: 2.5rem;
+            }
+            
+            .translation {
+                font-size: 2rem;
+            }
+            
+            .image-search-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .search-buttons {
+                width: 100%;
+            }
+            
+            .search-buttons .btn {
+                min-width: 100%;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .card {
+                padding: 20px;
+            }
+            
+            .flashcard-container {
+                height: 300px;
+            }
+            
+            .word {
+                font-size: 2rem;
+            }
+            
+            .translation {
+                font-size: 1.8rem;
+            }
+            
+            .step {
+                flex: 0 0 50%;
+            }
+            
+            .image-url-input {
+                flex-direction: column;
+            }
+            
+            .image-url-input input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-language"></i> FlashCards para Idiomas</h1>
+            <p class="subtitle">Genera flashcards personalizadas para aprender cualquier idioma. Busca imágenes manualmente en Google/Bing y pega las URLs.</p>
+        </header>
+        
+        <div class="step-indicator">
+            <div class="step active" id="step1">
+                <div class="step-circle">1</div>
+                <div class="step-label">Configuración</div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-circle">2</div>
+                <div class="step-label">Prompt IA</div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-circle">3</div>
+                <div class="step-label">Buscar Imágenes</div>
+            </div>
+            <div class="step" id="step4">
+                <div class="step-circle">4</div>
+                <div class="step-label">FlashCards</div>
+            </div>
+        </div>
+        
+        <!-- Paso 1: Formulario de configuración -->
+        <div class="card" id="step1-content">
+            <h2><i class="fas fa-cog"></i> Configura tus Flashcards</h2>
+            <p>Completa los siguientes datos para personalizar tus tarjetas de aprendizaje.</p>
+            
+            <div class="form-group">
+                <label for="nativeLanguage">Idioma nativo:</label>
+                <select id="nativeLanguage">
+                    <option value="español">Español</option>
+                    <option value="inglés">Inglés</option>
+                    <option value="francés">Francés</option>
+                    <option value="alemán">Alemán</option>
+                    <option value="italiano">Italiano</option>
+                    <option value="portugués">Portugués</option>
+                    <option value="chino">Chino</option>
+                    <option value="japonés">Japonés</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="targetLanguage">Idioma que quieres aprender:</label>
+                <select id="targetLanguage">
+                    <option value="inglés">Inglés</option>
+                    <option value="español">Español</option>
+                    <option value="francés">Francés</option>
+                    <option value="alemán">Alemán</option>
+                    <option value="italiano">Italiano</option>
+                    <option value="portugués">Portugués</option>
+                    <option value="chino">Chino</option>
+                    <option value="japonés">Japonés</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="topic">Tema de las flashcards:</label>
+                <input type="text" id="topic" placeholder="Ej: Comida, Animales, Verbos comunes, Viajes...">
+            </div>
+            
+            <div class="form-group">
+                <label for="level">Nivel de dificultad:</label>
+                <select id="level">
+                    <option value="principiante">Principiante</option>
+                    <option value="intermedio" selected>Intermedio</option>
+                    <option value="avanzado">Avanzado</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="cardCount">Cantidad de flashcards:</label>
+                <select id="cardCount">
+                    <option value="3">3</option>
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="15">15</option>
+                </select>
+            </div>
+
+            <!-- Configuración TTS -->
+            <div class="form-group">
+                <label for="ttsEnabled">
+                    <input type="checkbox" id="ttsEnabled" checked> Habilitar Text-to-Speech (TTS)
+                </label>
+            </div>
+
+            <div class="tts-settings" id="ttsSettings">
+                <h3><i class="fas fa-volume-up"></i> Configuración de Narración</h3>
+                
+                <div class="grid-2">
+                    <div>
+                        <label for="ttsVoice">Voz / Acento:</label>
+                        <select id="ttsVoice">
+                            <option value="US English Female">Inglés EE.UU. (Femenino)</option>
+                            <option value="US English Male">Inglés EE.UU. (Masculino)</option>
+                            <option value="UK English Female">Inglés Reino Unido (Femenino)</option>
+                            <option value="UK English Male">Inglés Reino Unido (Masculino)</option>
+                            <option value="Australian Female">Inglés Australiano (Femenino)</option>
+                            <option value="Spanish Female">Español (Femenino)</option>
+                            <option value="Spanish Male">Español (Masculino)</option>
+                            <option value="French Female">Francés (Femenino)</option>
+                            <option value="German Female">Alemán (Femenino)</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="ttsRate">Velocidad: <span id="ttsRateValue">1.0</span></label>
+                        <input type="range" id="ttsRate" min="0.5" max="2" step="0.1" value="1">
+                    </div>
+                    
+                    <div>
+                        <label for="ttsPitch">Tono: <span id="ttsPitchValue">1.0</span></label>
+                        <input type="range" id="ttsPitch" min="0.5" max="2" step="0.1" value="1">
+                    </div>
+                    
+                    <div>
+                        <label for="ttsVolume">Volumen: <span id="ttsVolumeValue">1.0</span></label>
+                        <input type="range" id="ttsVolume" min="0" max="1" step="0.1" value="1">
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px; padding: 10px; background: #f0f8ff; border-radius: 5px;">
+                    <label for="ttsTest">Probar configuración:</label>
+                    <div style="display: flex; gap: 10px; margin-top: 5px;">
+                        <input type="text" id="ttsTest" placeholder="Texto para probar la voz" value="Hello, welcome to language learning" style="flex: 1;">
+                        <button class="btn btn-small" id="testTTSBtn">
+                            <i class="fas fa-play"></i> Probar voz
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Fin Configuración TTS -->
+            
+            <div class="flex-buttons">
+                <button class="btn btn-large" id="generatePrompt">
+                    <i class="fas fa-robot"></i> Generar Prompt para IA
+                </button>
+            </div>
+        </div>
+        
+        <!-- Paso 2: Prompt para IA -->
+        <div class="card hidden" id="step2-content">
+            <h2><i class="fas fa-code"></i> Prompt para IA Externa</h2>
+            <p>Copia el siguiente prompt y péguelo en su IA preferida (ChatGPT, Claude, etc.). Luego pegue la respuesta JSON en el cuadro de abajo.</p>
+            
+            <div class="form-group">
+                <label for="promptText">Prompt generado (CALL):</label>
+                <textarea class="text-area" id="promptText" readonly></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="aiResponse">Pega aquí la respuesta de la IA (MAG):</label>
+                <textarea class="text-area" id="aiResponse" placeholder='Pega aquí el JSON generado por la IA. Ej: {"topic": "Comida", "cards": [{"native": "Manzana", "target": "Apple", "ipa": "/ˈæp.əl/", "example": "I eat an apple every day."}]}'></textarea>
+            </div>
+            
+            <div id="jsonMessage" class="message"></div>
+            
+            <div class="step-buttons">
+                <button class="btn btn-secondary" id="backToStep1">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </button>
+                <button class="btn" id="processJson">
+                    <i class="fas fa-check-circle"></i> Procesar JSON
+                </button>
+            </div>
+        </div>
+        
+        <!-- Paso 3: Búsqueda manual de imágenes -->
+        <div class="card hidden" id="step3-content">
+            <h2><i class="fas fa-images"></i> Buscar Imágenes Manualmente</h2>
+            
+            <div class="instructions">
+                <h3><i class="fas fa-info-circle"></i> Instrucciones para agregar imágenes:</h3>
+                <ol>
+                    <li>Para cada palabra, abre <strong>Google Images</strong> o <strong>Bing Images</strong> en una nueva pestaña</li>
+                    <li>Busca la palabra en el idioma objetivo (ej: "apple" para manzana)</li>
+                    <li>Haz clic derecho en la imagen que prefieras y selecciona <strong>"Copiar dirección de la imagen"</strong></li>
+                    <li>Regresa a esta página y pega la URL en el cuadro correspondiente</li>
+                    <li>Haz clic en "Verificar y Guardar" para previsualizar y guardar la imagen</li>
+                </ol>
+                <p><strong>Tip:</strong> Busca imágenes en formato JPG o PNG para mejor compatibilidad.</p>
+            </div>
+            
+            <div id="imageSelectionContainer">
+                <!-- Las secciones de búsqueda se generarán dinámicamente aquí -->
+            </div>
+            
+            <div class="step-buttons">
+                <button class="btn btn-secondary" id="backToStep2">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </button>
+                <button class="btn" id="generateCards">
+                    <i class="fas fa-play-circle"></i> Generar Flashcards
+                </button>
+            </div>
+        </div>
+        
+        <!-- Paso 4: Visualización de flashcards -->
+        <div class="card hidden" id="step4-content">
+            <h2><i class="fas fa-layer-group"></i> Flashcards para Practicar</h2>
+            <p class="card-counter" id="cardCounter">Flashcard 1 de 10</p>
+            
+            <div class="flashcard-container">
+                <div class="flashcard" id="flashcard">
+                    <div class="flashcard-front">
+                        <div class="word" id="cardWord">Apple</div>
+                        <div class="ipa" id="cardIpa">/ˈæp.əl/</div>
+                        <div class="image-container">
+                            <img id="cardImage" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Red_Apple.jpg/600px-Red_Apple.jpg" alt="Apple">
+                        </div>
+                        <p style="margin-top: 20px;">Haz clic para ver la traducción</p>
+                    </div>
+                    <div class="flashcard-back">
+                        <div class="translation" id="cardTranslation">Manzana</div>
+                        <div class="example" id="cardExample">I eat an apple every day.</div>
+                        <div class="image-container">
+                            <img id="cardImageBack" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Red_Apple.jpg/600px-Red_Apple.jpg" alt="Apple">
+                        </div>
+                        <p style="margin-top: 20px;">Haz clic para volver a la palabra</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flashcard-nav">
+                <button class="btn btn-secondary" id="prevCard">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <div class="progress">
+                        <span id="currentCardIndex">1</span> / <span id="totalCards">10</span>
+                    </div>
+                    
+                    <button class="btn btn-small" id="speakCard" style="background-color: #9b59b6;">
+                        <i class="fas fa-volume-up"></i> Pronunciar
+                    </button>
+                </div>
+                
+                <button class="btn btn-secondary" id="nextCard">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            
+            <div class="step-buttons">
+                <button class="btn btn-secondary" id="backToStep3">
+                    <i class="fas fa-arrow-left"></i> Volver a Imágenes
+                </button>
+                <button class="btn" id="restartProcess">
+                    <i class="fas fa-redo"></i> Crear Nuevas Flashcards
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Variables globales
+        let currentStep = 1;
+        let flashcardsData = [];
+        let currentCardIndex = 0;
+        let selectedImages = {};
+        
+        // Variables TTS
+        let ttsEnabled = true;
+        let ttsSettings = {
+            voice: 'US English Female',
+            rate: 1.0,
+            pitch: 1.0,
+            volume: 1.0
+        };
+        let voices = [];
+        let speechSynthesis = window.speechSynthesis;
+        
+        // Imágenes de respaldo por si las URLs proporcionadas fallan
+        const backupImages = {
+            "comida": [
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Good_Food_Display_-_NCI_Visuals_Online.jpg/600px-Good_Food_Display_-_NCI_Visuals_Online.jpg",
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Good_Food_Display_-_NCI_Visuals_Online.jpg/600px-Good_Food_Display_-_NCI_Visuals_Online.jpg"
+            ],
+            "animales": [
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Walking_tiger_female.jpg/600px-Walking_tiger_female.jpg",
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Cecil_the_lion_at_Hwange_National_Park_%284516560206%29.jpg/600px-Cecil_the_lion_at_Hwange_National_Park_%284516560206%29.jpg"
+            ],
+            "viajes": [
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Crane_estate_(5).jpg/600px-Crane_estate_(5).jpg",
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Half_Dome_from_Glacier_Point%2C_Yosemite_NP_-_Diliff.jpg/600px-Half_Dome_from_Glacier_Point%2C_Yosemite_NP_-_Diliff.jpg"
+            ],
+            "default": [
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Red_Apple.jpg/600px-Red_Apple.jpg",
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/600px-Image_created_with_a_mobile_phone.png"
+            ]
+        };
+        
+        // Elementos del DOM
+        const stepContents = {
+            1: document.getElementById('step1-content'),
+            2: document.getElementById('step2-content'),
+            3: document.getElementById('step3-content'),
+            4: document.getElementById('step4-content')
+        };
+        
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar event listeners para los botones
+            document.getElementById('generatePrompt').addEventListener('click', generatePrompt);
+            document.getElementById('backToStep1').addEventListener('click', () => navigateToStep(1));
+            document.getElementById('processJson').addEventListener('click', processJson);
+            document.getElementById('backToStep2').addEventListener('click', () => navigateToStep(2));
+            document.getElementById('generateCards').addEventListener('click', generateCards);
+            document.getElementById('backToStep3').addEventListener('click', () => navigateToStep(3));
+            document.getElementById('restartProcess').addEventListener('click', restartProcess);
+            
+            // Event listeners para navegación de flashcards
+            document.getElementById('prevCard').addEventListener('click', showPrevCard);
+            document.getElementById('nextCard').addEventListener('click', showNextCard);
+            document.getElementById('speakCard').addEventListener('click', speakCurrentCard);
+            document.getElementById('flashcard').addEventListener('click', flipCard);
+            
+            // Configurar event listeners para TTS
+            document.getElementById('ttsEnabled').addEventListener('change', toggleTTS);
+            document.getElementById('ttsVoice').addEventListener('change', updateTTSSettings);
+            document.getElementById('ttsRate').addEventListener('input', updateTTSSettings);
+            document.getElementById('ttsPitch').addEventListener('input', updateTTSSettings);
+            document.getElementById('ttsVolume').addEventListener('input', updateTTSSettings);
+            document.getElementById('testTTSBtn').addEventListener('click', testTTS);
+            
+            // Cargar voces disponibles
+            loadVoices();
+            
+            // Si speechSynthesis no está disponible, deshabilitar TTS
+            if (!speechSynthesis) {
+                document.getElementById('ttsEnabled').disabled = true;
+                document.getElementById('ttsEnabled').parentElement.innerHTML += 
+                    '<br><small style="color: #e74c3c;">TTS no está disponible en tu navegador</small>';
+            }
+            
+            // Inicializar con el paso 1
+            updateStepIndicator(1);
+            toggleTTS(); // Aplicar estado inicial de TTS
+        });
+        
+        // Navegar entre pasos
+        function navigateToStep(step) {
+            // Ocultar todos los pasos
+            Object.values(stepContents).forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Mostrar el paso actual
+            stepContents[step].classList.remove('hidden');
+            
+            // Actualizar el indicador de pasos
+            updateStepIndicator(step);
+            
+            currentStep = step;
+        }
+        
+        // Actualizar el indicador de pasos
+        function updateStepIndicator(activeStep) {
+            // Resetear todos los pasos
+            for (let i = 1; i <= 4; i++) {
+                const stepElement = document.getElementById(`step${i}`);
+                stepElement.classList.remove('active');
+            }
+            
+            // Activar el paso actual
+            document.getElementById(`step${activeStep}`).classList.add('active');
+        }
+        
+        // Generar el prompt para la IA
+        function generatePrompt() {
+            // Obtener valores del formulario
+            const nativeLanguage = document.getElementById('nativeLanguage').value;
+            const targetLanguage = document.getElementById('targetLanguage').value;
+            const topic = document.getElementById('topic').value;
+            const level = document.getElementById('level').value;
+            const cardCount = document.getElementById('cardCount').value;
+            
+            // Validar que se haya ingresado un tema
+            if (!topic.trim()) {
+                alert('Por favor ingresa un tema para las flashcards.');
+                document.getElementById('topic').focus();
+                return;
+            }
+            
+            // Crear el prompt para la IA
+            const prompt = `Genera un JSON con ${cardCount} flashcards para aprender ${targetLanguage} con lengua nativa ${nativeLanguage}. 
+
+INSTRUCCIONES:
+- Tema: ${topic}
+- Nivel: ${level}
+- Formato JSON con la siguiente estructura:
+{
+  "topic": "${topic}",
+  "nativeLanguage": "${nativeLanguage}",
+  "targetLanguage": "${targetLanguage}",
+  "level": "${level}",
+  "cards": [
+    {
+      "native": "palabra en ${nativeLanguage}",
+      "target": "palabra en ${targetLanguage}",
+      ${targetLanguage.toLowerCase() === 'inglés' ? '"ipa": "transcripción fonética IPA",' : ''}
+      "example": "ejemplo de uso en ${targetLanguage}"
+    }
+  ]
+}
+
+- Las palabras deben ser relevantes para el tema "${topic}" y adecuadas para nivel ${level}.
+- ${targetLanguage.toLowerCase() === 'inglés' ? 'Incluye la transcripción fonética IPA para cada palabra en inglés.' : ''}
+- Los ejemplos deben ser frases útiles y prácticas.
+- El JSON debe ser válido y estar listo para parsear.`;
+            
+            // Mostrar el prompt en el paso 2
+            document.getElementById('promptText').value = prompt;
+            
+            // Navegar al paso 2
+            navigateToStep(2);
+        }
+        
+        // Procesar el JSON ingresado por el usuario
+        function processJson() {
+            const jsonInput = document.getElementById('aiResponse').value.trim();
+            const messageDiv = document.getElementById('jsonMessage');
+            
+            // Validar que se haya ingresado algo
+            if (!jsonInput) {
+                showMessage('Por favor pega el JSON generado por la IA.', 'error');
+                return;
+            }
+            
+            try {
+                // Parsear el JSON
+                const data = JSON.parse(jsonInput);
+                
+                // Validar la estructura básica
+                if (!data.cards || !Array.isArray(data.cards) || data.cards.length === 0) {
+                    throw new Error('El JSON debe contener un array "cards" con al menos una flashcard.');
+                }
+                
+                // Validar cada tarjeta
+                data.cards.forEach((card, index) => {
+                    if (!card.native || !card.target) {
+                        throw new Error(`La flashcard ${index + 1} debe tener propiedades "native" y "target".`);
+                    }
+                });
+                
+                // Almacenar los datos
+                flashcardsData = data.cards;
+                
+                // Mostrar mensaje de éxito
+                showMessage(`JSON procesado correctamente. Se encontraron ${flashcardsData.length} flashcards.`, 'success');
+                
+                // Generar búsqueda de imágenes después de un breve delay
+                setTimeout(() => {
+                    startImageSearch();
+                }, 1000);
+                
+            } catch (error) {
+                showMessage(`Error en el JSON: ${error.message}`, 'error');
+                console.error('Error al parsear JSON:', error);
+            }
+        }
+        
+        // Mostrar mensaje
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('jsonMessage');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            // Ocultar mensaje después de 5 segundos
+            if (type !== 'error') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Iniciar la búsqueda de imágenes
+        function startImageSearch() {
+            // Navegar al paso 3
+            navigateToStep(3);
+            
+            // Renderizar las secciones de búsqueda de imágenes
+            renderImageSearches();
+        }
+        
+        // Renderizar las secciones de búsqueda de imágenes
+        function renderImageSearches() {
+            const container = document.getElementById('imageSelectionContainer');
+            container.innerHTML = '';
+            
+            // Para cada flashcard, crear una sección de búsqueda de imágenes
+            flashcardsData.forEach((card, index) => {
+                // Crear contenedor para esta palabra
+                const cardContainer = document.createElement('div');
+                cardContainer.className = 'image-search-container';
+                cardContainer.id = `image-container-${index}`;
+                
+                // Título con la palabra
+                const header = document.createElement('div');
+                header.className = 'image-search-header';
+                header.innerHTML = `
+                    <h3>${card.target} (${card.native})</h3>
+                    <span id="image-status-${index}" class="image-status ${selectedImages[index] ? 'selected' : ''}">
+                        ${selectedImages[index] ? '✓ Imagen guardada' : 'Sin imagen'}
+                    </span>
+                `;
+                
+                // Botones de búsqueda rápida
+                const searchButtons = document.createElement('div');
+                searchButtons.className = 'search-buttons';
+                
+                // Crear enlaces de búsqueda para Google y Bing
+                const googleSearchUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(card.target)}`;
+                const bingSearchUrl = `https://www.bing.com/images/search?q=${encodeURIComponent(card.target)}`;
+                
+                searchButtons.innerHTML = `
+                    <a href="${googleSearchUrl}" target="_blank" class="btn btn-secondary">
+                        <i class="fab fa-google"></i> Buscar en Google Images
+                    </a>
+                    <a href="${bingSearchUrl}" target="_blank" class="btn btn-secondary">
+                        <i class="fab fa-microsoft"></i> Buscar en Bing Images
+                    </a>
+                `;
+                
+                // Campo para pegar la URL de la imagen
+                const urlInputContainer = document.createElement('div');
+                urlInputContainer.className = 'image-url-input';
+                urlInputContainer.innerHTML = `
+                    <input type="text" id="image-url-${index}" 
+                           placeholder="Pega aquí la URL de la imagen (copiada de Google/Bing)" 
+                           value="${selectedImages[index] ? selectedImages[index].url : ''}">
+                    <button class="btn btn-small" id="test-image-${index}">
+                        <i class="fas fa-eye"></i> Verificar
+                    </button>
+                    <button class="btn btn-small" id="save-image-${index}">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                `;
+                
+                // Previsualización de imagen
+                const previewContainer = document.createElement('div');
+                previewContainer.className = `image-preview ${selectedImages[index] ? '' : 'empty'}`;
+                previewContainer.id = `image-preview-${index}`;
+                
+                if (selectedImages[index]) {
+                    previewContainer.innerHTML = `<img src="${selectedImages[index].url}" alt="${card.target}" onerror="handleImageError(${index})">`;
+                } else {
+                    previewContainer.innerHTML = `
+                        <i class="fas fa-image"></i>
+                        <p>Previsualización de imagen</p>
+                        <p><small>Pega una URL y haz clic en "Verificar"</small></p>
+                    `;
+                }
+                
+                // Agregar elementos al contenedor
+                cardContainer.appendChild(header);
+                cardContainer.appendChild(searchButtons);
+                cardContainer.appendChild(urlInputContainer);
+                cardContainer.appendChild(previewContainer);
+                container.appendChild(cardContainer);
+                
+                // Configurar event listeners para los botones
+                document.getElementById(`test-image-${index}`).addEventListener('click', () => {
+                    testImageUrl(index);
+                });
+                
+                document.getElementById(`save-image-${index}`).addEventListener('click', () => {
+                    saveImageUrl(index);
+                });
+                
+                // Permitir guardar con Enter
+                document.getElementById(`image-url-${index}`).addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        saveImageUrl(index);
+                    }
+                });
+            });
+            
+            // Actualizar contador
+            updateImageSelectionCounter();
+        }
+        
+        // Probar una URL de imagen
+        function testImageUrl(cardIndex) {
+            const urlInput = document.getElementById(`image-url-${cardIndex}`);
+            const previewContainer = document.getElementById(`image-preview-${cardIndex}`);
+            const imageUrl = urlInput.value.trim();
+            
+            if (!imageUrl) {
+                alert('Por favor ingresa una URL de imagen.');
+                return;
+            }
+            
+            // Verificar que sea una URL válida
+            if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+                alert('La URL debe comenzar con http:// o https://');
+                return;
+            }
+            
+            // Mostrar cargando
+            previewContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>Verificando imagen...</p></div>';
+            previewContainer.className = 'image-preview';
+            
+            // Crear una imagen para probar si se carga
+            const testImage = new Image();
+            testImage.onload = function() {
+                // La imagen se cargó correctamente
+                previewContainer.innerHTML = `<img src="${imageUrl}" alt="${flashcardsData[cardIndex].target}" onerror="handleImageError(${cardIndex})">`;
+                previewContainer.className = 'image-preview';
+                
+                // Mostrar mensaje de éxito
+                const statusElement = document.getElementById(`image-status-${cardIndex}`);
+                statusElement.textContent = '✓ Imagen verificada';
+                statusElement.className = 'image-status selected';
+                
+                // Sugerir guardar
+                setTimeout(() => {
+                    if (!selectedImages[cardIndex]) {
+                        alert('Imagen verificada correctamente. Haz clic en "Guardar" para asignarla a esta palabra.');
+                    }
+                }, 500);
+            };
+            
+            testImage.onerror = function() {
+                // La imagen no se pudo cargar
+                previewContainer.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i>
+                    <p>No se pudo cargar la imagen</p>
+                    <p><small>La URL puede ser incorrecta o la imagen no es accesible.</small></p>
+                    <p><small>Intenta con otra imagen o URL.</small></p>
+                `;
+                previewContainer.className = 'image-preview empty';
+                
+                const statusElement = document.getElementById(`image-status-${cardIndex}`);
+                statusElement.textContent = 'Error de imagen';
+                statusElement.className = 'image-status';
+            };
+            
+            // Establecer un timeout para la carga
+            setTimeout(() => {
+                if (!testImage.complete) {
+                    testImage.onerror();
+                }
+            }, 5000);
+            
+            // Intentar cargar la imagen
+            testImage.src = imageUrl;
+        }
+        
+        // Guardar una URL de imagen
+        function saveImageUrl(cardIndex) {
+            const urlInput = document.getElementById(`image-url-${cardIndex}`);
+            const imageUrl = urlInput.value.trim();
+            
+            if (!imageUrl) {
+                alert('Por favor ingresa una URL de imagen antes de guardar.');
+                return;
+            }
+            
+            // Guardar la URL
+            selectedImages[cardIndex] = {
+                url: imageUrl,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Actualizar estado
+            const statusElement = document.getElementById(`image-status-${cardIndex}`);
+            statusElement.textContent = '✓ Imagen guardada';
+            statusElement.className = 'image-status selected';
+            
+            // Actualizar contador
+            updateImageSelectionCounter();
+            
+            // Mostrar mensaje de confirmación
+            showMessage(`Imagen guardada para "${flashcardsData[cardIndex].target}"`, 'success');
+        }
+        
+        // Manejar error de carga de imagen
+        function handleImageError(cardIndex) {
+            const previewContainer = document.getElementById(`image-preview-${cardIndex}`);
+            
+            // Usar una imagen de respaldo
+            const topic = document.getElementById('topic').value.toLowerCase();
+            let category = 'default';
+            
+            if (topic.includes('comida') || topic.includes('food') || topic.includes('alimento')) {
+                category = 'comida';
+            } else if (topic.includes('animal') || topic.includes('pet') || topic.includes('mascota')) {
+                category = 'animales';
+            } else if (topic.includes('viaje') || topic.includes('travel') || topic.includes('turismo')) {
+                category = 'viajes';
+            }
+            
+            const randomIndex = Math.floor(Math.random() * backupImages[category].length);
+            const backupUrl = backupImages[category][randomIndex];
+            
+            // Actualizar la URL guardada con la de respaldo
+            if (selectedImages[cardIndex]) {
+                selectedImages[cardIndex].url = backupUrl;
+                selectedImages[cardIndex].isBackup = true;
+            }
+            
+            // Mostrar la imagen de respaldo
+            previewContainer.innerHTML = `<img src="${backupUrl}" alt="${flashcardsData[cardIndex].target}">`;
+            
+            // Mostrar advertencia
+            const statusElement = document.getElementById(`image-status-${cardIndex}`);
+            statusElement.textContent = '✓ Imagen de respaldo';
+            statusElement.className = 'image-status selected';
+            
+            console.log(`Imagen no disponible, usando respaldo para: ${flashcardsData[cardIndex].target}`);
+        }
+        
+        // Actualizar contador de imágenes seleccionadas
+        function updateImageSelectionCounter() {
+            const selectedCount = Object.keys(selectedImages).length;
+            const totalCount = flashcardsData.length;
+            
+            const generateBtn = document.getElementById('generateCards');
+            
+            if (selectedCount === totalCount) {
+                generateBtn.innerHTML = `<i class="fas fa-play-circle"></i> Generar Flashcards (${selectedCount}/${totalCount})`;
+            } else {
+                generateBtn.innerHTML = `<i class="fas fa-play-circle"></i> Generar Flashcards (${selectedCount}/${totalCount} imágenes)`;
+            }
+            
+            // Siempre permitir generar, incluso si no todas tienen imágenes
+            generateBtn.disabled = false;
+        }
+        
+        // Generar las flashcards finales
+        function generateCards() {
+            // Asignar las imágenes seleccionadas a cada flashcard
+            flashcardsData.forEach((card, index) => {
+                if (selectedImages[index]) {
+                    card.imageUrl = selectedImages[index].url;
+                    card.imageBackup = selectedImages[index].isBackup || false;
+                } else {
+                    // Si no hay imagen seleccionada, usar una de respaldo
+                    const topic = document.getElementById('topic').value.toLowerCase();
+                    let category = 'default';
+                    
+                    if (topic.includes('comida') || topic.includes('food') || topic.includes('alimento')) {
+                        category = 'comida';
+                    } else if (topic.includes('animal') || topic.includes('pet') || topic.includes('mascota')) {
+                        category = 'animales';
+                    } else if (topic.includes('viaje') || topic.includes('travel') || topic.includes('turismo')) {
+                        category = 'viajes';
+                    }
+                    
+                    const randomIndex = Math.floor(Math.random() * backupImages[category].length);
+                    card.imageUrl = backupImages[category][randomIndex];
+                    card.imageBackup = true;
+                }
+            });
+            
+            // Navegar al paso 4
+            navigateToStep(4);
+            
+            // Mostrar la primera flashcard
+            showCard(0);
+        }
+        
+        // Mostrar una flashcard específica
+        function showCard(index) {
+            if (index < 0 || index >= flashcardsData.length) return;
+            
+            const card = flashcardsData[index];
+            const flashcardElement = document.getElementById('flashcard');
+            
+            // Restablecer la rotación de la tarjeta
+            flashcardElement.classList.remove('flipped');
+            
+            // Actualizar el contenido de la tarjeta
+            document.getElementById('cardWord').textContent = card.target;
+            document.getElementById('cardTranslation').textContent = card.native;
+            
+            // Usar la imagen seleccionada o una de respaldo
+            const imageUrl = card.imageUrl || backupImages.default[0];
+            const cardImage = document.getElementById('cardImage');
+            const cardImageBack = document.getElementById('cardImageBack');
+            
+            cardImage.src = imageUrl;
+            cardImage.alt = card.target;
+            cardImageBack.src = imageUrl;
+            cardImageBack.alt = card.native;
+            
+            // Mostrar IPA si está disponible y el idioma objetivo es inglés
+            const ipaElement = document.getElementById('cardIpa');
+            const targetLanguage = document.getElementById('targetLanguage').value;
+            
+            if (card.ipa && targetLanguage.toLowerCase() === 'inglés') {
+                ipaElement.textContent = card.ipa;
+                ipaElement.style.display = 'block';
+            } else {
+                ipaElement.style.display = 'none';
+            }
+            
+            // Mostrar ejemplo si está disponible
+            const exampleElement = document.getElementById('cardExample');
+            if (card.example) {
+                exampleElement.textContent = card.example;
+                exampleElement.style.display = 'block';
+            } else {
+                exampleElement.style.display = 'none';
+            }
+            
+            // Agregar botones de TTS si está habilitado
+            addTTSButtons(card);
+            
+            // Actualizar el contador
+            currentCardIndex = index;
+            document.getElementById('currentCardIndex').textContent = index + 1;
+            document.getElementById('totalCards').textContent = flashcardsData.length;
+            document.getElementById('cardCounter').textContent = `Flashcard ${index + 1} de ${flashcardsData.length}`;
+            
+            // Actualizar estado de los botones de navegación
+            document.getElementById('prevCard').disabled = index === 0;
+            document.getElementById('nextCard').disabled = index === flashcardsData.length - 1;
+        }
+        
+        // Mostrar la siguiente flashcard
+        function showNextCard() {
+            if (currentCardIndex < flashcardsData.length - 1) {
+                showCard(currentCardIndex + 1);
+            }
+        }
+        
+        // Mostrar la flashcard anterior
+        function showPrevCard() {
+            if (currentCardIndex > 0) {
+                showCard(currentCardIndex - 1);
+            }
+        }
+        
+        // Voltear la flashcard
+        function flipCard() {
+            document.getElementById('flashcard').classList.toggle('flipped');
+        }
+        
+        // Reiniciar el proceso
+        function restartProcess() {
+            // Detener cualquier narración en curso
+            if (speechSynthesis) {
+                speechSynthesis.cancel();
+            }
+            
+            // Resetear variables
+            flashcardsData = [];
+            currentCardIndex = 0;
+            selectedImages = {};
+            
+            // Limpiar formularios
+            document.getElementById('topic').value = '';
+            document.getElementById('aiResponse').value = '';
+            
+            // Navegar al paso 1
+            navigateToStep(1);
+        }
+        
+        // ========== FUNCIONES TTS ==========
+        
+        // Función para cargar las voces disponibles
+        function loadVoices() {
+            if (!speechSynthesis) return;
+            
+            voices = speechSynthesis.getVoices();
+            
+            // Actualizar opciones de voz si hay voces disponibles
+            if (voices.length > 0) {
+                const voiceSelect = document.getElementById('ttsVoice');
+                const currentVoice = voiceSelect.value;
+                voiceSelect.innerHTML = '';
+                
+                voices.forEach((voice, index) => {
+                    const option = document.createElement('option');
+                    option.value = voice.name;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    voiceSelect.appendChild(option);
+                });
+                
+                // Intentar mantener la voz seleccionada
+                const voiceExists = voices.some(v => v.name === currentVoice);
+                if (voiceExists) {
+                    voiceSelect.value = currentVoice;
+                    ttsSettings.voice = currentVoice;
+                } else if (voices.length > 0) {
+                    voiceSelect.value = voices[0].name;
+                    ttsSettings.voice = voices[0].name;
+                }
+            }
+        }
+        
+        // Recargar voces cuando estén disponibles
+        if (speechSynthesis) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+        
+        // Función para alternar TTS
+        function toggleTTS() {
+            ttsEnabled = document.getElementById('ttsEnabled').checked;
+            const ttsSettingsDiv = document.getElementById('ttsSettings');
+            
+            if (ttsEnabled) {
+                ttsSettingsDiv.style.opacity = '1';
+                ttsSettingsDiv.style.pointerEvents = 'all';
+            } else {
+                ttsSettingsDiv.style.opacity = '0.6';
+                ttsSettingsDiv.style.pointerEvents = 'none';
+            }
+        }
+        
+        // Función para actualizar configuraciones de TTS
+        function updateTTSSettings() {
+            ttsSettings = {
+                voice: document.getElementById('ttsVoice').value,
+                rate: parseFloat(document.getElementById('ttsRate').value),
+                pitch: parseFloat(document.getElementById('ttsPitch').value),
+                volume: parseFloat(document.getElementById('ttsVolume').value)
+            };
+            
+            // Actualizar valores mostrados
+            document.getElementById('ttsRateValue').textContent = ttsSettings.rate.toFixed(1);
+            document.getElementById('ttsPitchValue').textContent = ttsSettings.pitch.toFixed(1);
+            document.getElementById('ttsVolumeValue').textContent = ttsSettings.volume.toFixed(1);
+        }
+        
+        // Función para probar TTS
+        function testTTS() {
+            if (!ttsEnabled || !speechSynthesis) return;
+            
+            const testText = document.getElementById('ttsTest').value || "Hello, welcome to language learning";
+            speakText(testText, false);
+        }
+        
+        // Función principal para hablar texto
+        function speakText(text, isCardWord = true) {
+            if (!ttsEnabled || !speechSynthesis) return;
+            
+            // Cancelar cualquier narración en curso
+            speechSynthesis.cancel();
+            
+            // Crear nuevo utterance
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // Configurar parámetros
+            utterance.rate = ttsSettings.rate;
+            utterance.pitch = ttsSettings.pitch;
+            utterance.volume = ttsSettings.volume;
+            
+            // Buscar la voz seleccionada
+            const selectedVoice = voices.find(voice => voice.name === ttsSettings.voice);
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
+            
+            // Para palabras de flashcards, ajustar el idioma automáticamente
+            if (isCardWord) {
+                const targetLanguage = document.getElementById('targetLanguage').value;
+                if (targetLanguage === 'español') {
+                    utterance.lang = 'es-ES';
+                } else if (targetLanguage === 'francés') {
+                    utterance.lang = 'fr-FR';
+                } else if (targetLanguage === 'alemán') {
+                    utterance.lang = 'de-DE';
+                } else if (targetLanguage === 'italiano') {
+                    utterance.lang = 'it-IT';
+                } else if (targetLanguage === 'portugués') {
+                    utterance.lang = 'pt-BR';
+                } else if (targetLanguage === 'chino') {
+                    utterance.lang = 'zh-CN';
+                } else if (targetLanguage === 'japonés') {
+                    utterance.lang = 'ja-JP';
+                } else {
+                    utterance.lang = 'en-US'; // Por defecto inglés
+                }
+            }
+            
+            // Reproducir
+            speechSynthesis.speak(utterance);
+        }
+        
+        // Función para agregar botones de TTS a las flashcards
+        function addTTSButtons(card) {
+            // Eliminar botones existentes
+            const existingButtons = document.querySelectorAll('.tts-button');
+            existingButtons.forEach(button => button.remove());
+            
+            if (!ttsEnabled || !speechSynthesis) return;
+            
+            // Crear botón para el frente de la tarjeta (pronunciar palabra en idioma objetivo)
+            const frontButton = document.createElement('button');
+            frontButton.className = 'tts-button';
+            frontButton.innerHTML = '<i class="fas fa-volume-up"></i>';
+            frontButton.title = `Pronunciar: ${card.target}`;
+            frontButton.onclick = (e) => {
+                e.stopPropagation(); // Prevenir que se voltee la tarjeta
+                speakText(card.target);
+            };
+            
+            // Crear botón para el reverso de la tarjeta (pronunciar traducción)
+            const backButton = document.createElement('button');
+            backButton.className = 'tts-button';
+            backButton.innerHTML = '<i class="fas fa-volume-up"></i>';
+            backButton.title = `Pronunciar: ${card.native}`;
+            backButton.onclick = (e) => {
+                e.stopPropagation(); // Prevenir que se voltee la tarjeta
+                speakText(card.native);
+            };
+            
+            // Agregar botones a las caras de la tarjeta
+            const frontFace = document.querySelector('.flashcard-front');
+            const backFace = document.querySelector('.flashcard-back');
+            
+            frontFace.appendChild(frontButton);
+            backFace.appendChild(backButton);
+        }
+        
+        // Función para pronunciar la tarjeta actual
+        function speakCurrentCard() {
+            if (!ttsEnabled || !speechSynthesis || !flashcardsData[currentCardIndex]) return;
+            
+            const card = flashcardsData[currentCardIndex];
+            const flashcard = document.getElementById('flashcard');
+            
+            // Determinar qué texto pronunciar según el lado de la tarjeta
+            if (flashcard.classList.contains('flipped')) {
+                // Si está volteada, pronunciar la traducción
+                speakText(card.native);
+            } else {
+                // Si no está volteada, pronunciar la palabra en el idioma objetivo
+                speakText(card.target);
+            }
+        }
+        // ========== FIN FUNCIONES TTS ==========
+    </script>
+</body>
+</html>

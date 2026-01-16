@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>English Conversation Tutor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        :root {
+            --primary-color: #0084ff;
+            --secondary-color: #f0f2f5;
+            --user-msg-bg: #0084ff;
+            --bot-msg-bg: #f0f0f0;
+            --text-dark: #303030;
+            --text-light: #65676b;
+            --border-color: #e4e6eb;
+            --success-color: #34c759;
+            --warning-color: #ff9500;
+            --danger-color: #ff3b30;
+            --chatgpt-color: #10a37f;
+            --deepseek-color: #5b4fc8;
+            --gemini-color: #4285f4;
+            --copilot-color: #0078d4;
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            touch-action: manipulation;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-container {
+            width: 100vw;
+            height: 100vh;
+            height: -webkit-fill-available;
+            max-height: 1080px;
+            max-width: 400px;
+            background: white;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+            border-radius: 0;
+        }
+
+        @media (min-width: 401px) {
+            .app-container {
+                border-radius: 20px;
+                margin: 20px auto;
+                height: calc(100vh - 40px);
+                max-height: 1040px;
+            }
+        }
+
+        /* Prevenir bounce en iOS */
+        .app-container {
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Header */
+        .app-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 16px;
+            padding-top: calc(12px + var(--safe-area-top));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            min-height: 60px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .app-header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .header-icons i {
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .header-icons i:active {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        /* Sections */
+        .section {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .section.hidden {
+            display: none;
+        }
+
+        /* Form Section */
+        .form-section {
+            padding: 16px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: calc(16px + var(--safe-area-bottom));
+            overscroll-behavior: contain;
+        }
+
+        .form-section h2 {
+            margin-bottom: 16px;
+            color: var(--primary-color);
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+            -webkit-appearance: none;
+            appearance: none;
+            font-size: 16px !important; /* Previene zoom en iOS */
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+            line-height: 1.4;
+        }
+
+        /* Evitar zoom en inputs en iOS */
+        @supports (-webkit-touch-callout: none) {
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                font-size: 16px !important;
+            }
+        }
+
+        .btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex: 1;
+            min-height: 50px;
+            -webkit-tap-highlight-color: rgba(0, 132, 255, 0.1);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f0f2f5;
+            color: var(--text-dark);
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Prompt Section */
+        .prompt-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 15px;
+            border: 1px dashed var(--border-color);
+        }
+
+        .prompt-section h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+            text-align: center;
+        }
+
+        .prompt-box {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        /* AI Models Section */
+        .ai-models-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .ai-models-section h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+            text-align: center;
+        }
+
+        .ai-models-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .ai-model-card {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            -webkit-tap-highlight-color: rgba(0, 132, 255, 0.1);
+            user-select: none;
+        }
+
+        .ai-model-card:active {
+            transform: scale(0.98);
+        }
+
+        .ai-model-card.chatgpt {
+            border-color: var(--chatgpt-color);
+            background: rgba(16, 163, 127, 0.05);
+        }
+
+        .ai-model-card.deepseek {
+            border-color: var(--deepseek-color);
+            background: rgba(91, 79, 200, 0.05);
+        }
+
+        .ai-model-card.gemini {
+            border-color: var(--gemini-color);
+            background: rgba(66, 133, 244, 0.05);
+        }
+
+        .ai-model-card.copilot {
+            border-color: var(--copilot-color);
+            background: rgba(0, 120, 212, 0.05);
+        }
+
+        .model-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+        }
+
+        /* Chat Section */
+        .chat-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 16px;
+            padding-top: calc(12px + var(--safe-area-top));
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .back-btn:active {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        .chat-header-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-header-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-header-info p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        /* Chat Messages - OPTIMIZADO PARA iOS */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            position: relative;
+            z-index: 1;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            word-wrap: break-word;
+            line-height: 1.4;
+            font-size: 16px;
+            animation: fadeIn 0.3s;
+            z-index: 3;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-bot {
+            align-self: flex-start;
+            background: white;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .message-user {
+            align-self: flex-end;
+            background: var(--user-msg-bg);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .listen-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px;
+            border-radius: 4px;
+            -webkit-tap-highlight-color: rgba(0, 132, 255, 0.1);
+        }
+
+        .listen-btn:active {
+            background-color: rgba(0,132,255,0.1);
+        }
+
+        /* Hint Bubble Styles */
+        .hint-bubble {
+            background: #e7f3ff;
+            border: 1px solid #b3d7ff;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+            position: relative;
+            animation: fadeIn 0.5s;
+            z-index: 3;
+        }
+
+        .hint-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .hint-header h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .hint-toggle {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: rgba(0, 132, 255, 0.1);
+        }
+
+        .hint-toggle:active {
+            background-color: rgba(0,132,255,0.1);
+        }
+
+        .hint-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .hint-content.expanded {
+            max-height: 500px;
+        }
+
+        .hint-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .hint-item {
+            padding: 8px 0 8px 24px;
+            border-bottom: 1px solid rgba(179, 215, 255, 0.3);
+            position: relative;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .hint-item:last-child {
+            border-bottom: none;
+        }
+
+        .hint-item:before {
+            content: "💡";
+            position: absolute;
+            left: 0;
+            top: 8px;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 12px 16px;
+            padding-bottom: calc(12px + var(--safe-area-bottom));
+            background: white;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            z-index: 10;
+            position: sticky;
+            bottom: 0;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            font-size: 16px;
+            outline: none;
+            min-height: 50px;
+            -webkit-appearance: none;
+            appearance: none;
+            font-size: 16px !important;
+        }
+
+        .mic-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: rgba(0, 132, 255, 0.2);
+        }
+
+        .mic-btn.recording {
+            background: #ff3b30;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 59, 48, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-top: var(--safe-area-top);
+            padding-bottom: var(--safe-area-bottom);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .settings-panel.active {
+            transform: translateX(0);
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 16px;
+            padding-top: calc(16px + var(--safe-area-top));
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .settings-header h2 {
+            font-size: 20px;
+        }
+
+        .settings-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            padding-bottom: calc(16px + var(--safe-area-bottom));
+            overscroll-behavior: contain;
+        }
+
+        .settings-group {
+            margin-bottom: 24px;
+        }
+
+        .settings-group h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: var(--text-dark);
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .settings-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 12px 0;
+        }
+
+        .settings-option label {
+            font-size: 16px;
+            color: var(--text-dark);
+        }
+
+        .settings-option select {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 16px;
+            min-width: 120px;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+            pointer-events: none;
+        }
+
+        .overlay.active {
+            display: block;
+            pointer-events: auto;
+        }
+
+        /* Feedback Message */
+        .feedback-message {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 8px 0;
+            font-size: 14px;
+            color: #856404;
+            align-self: flex-start;
+            max-width: 85%;
+            animation: fadeIn 0.3s;
+            z-index: 3;
+        }
+
+        /* Home Button */
+        .home-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .home-btn:active {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        /* Lección Manager */
+        .lesson-manager {
+            padding: 16px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: calc(16px + var(--safe-area-bottom));
+            overscroll-behavior: contain;
+        }
+
+        .lesson-manager h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .lessons-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .lesson-item {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: rgba(0, 132, 255, 0.1);
+        }
+
+        .lesson-item:active {
+            transform: scale(0.99);
+            background-color: #f8f9fa;
+        }
+
+        .lesson-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .lesson-info h4 {
+            font-size: 16px;
+            margin-bottom: 6px;
+            color: var(--text-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lesson-info p {
+            font-size: 12px;
+            color: var(--text-light);
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .lesson-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .lesson-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 18px;
+        }
+
+        .lesson-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* Editor Section */
+        .editor-section {
+            padding: 16px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: calc(16px + var(--safe-area-bottom));
+            overscroll-behavior: contain;
+        }
+
+        .editor-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        /* Conversation Complete */
+        .conversation-complete {
+            text-align: center;
+            padding: 24px;
+            background: white;
+            margin: 16px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .conversation-complete i {
+            font-size: 48px;
+            color: var(--success-color);
+            margin-bottom: 16px;
+        }
+
+        .conversation-complete h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+        }
+
+        .conversation-complete p {
+            color: var(--text-light);
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .complete-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Ajustes para pantallas más altas */
+        @media (max-height: 700px) {
+            .form-section h2,
+            .lesson-manager h2,
+            .editor-section h2 {
+                font-size: 18px;
+                margin-bottom: 12px;
+            }
+            
+            .btn {
+                padding: 12px 16px;
+                min-height: 44px;
+            }
+            
+            .message {
+                font-size: 14px;
+                padding: 10px 14px;
+            }
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--primary-color);
+            color: white;
+            padding: 20px 24px;
+            border-radius: 16px;
+            z-index: 10000;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            font-weight: 600;
+            text-align: center;
+            animation: notificationInOut 3s ease forwards;
+            max-width: 90%;
+            word-wrap: break-word;
+        }
+
+        @keyframes notificationInOut {
+            0% { opacity: 0; transform: translate(-50%, -40%); }
+            10% { opacity: 1; transform: translate(-50%, -50%); }
+            90% { opacity: 1; transform: translate(-50%, -50%); }
+            100% { opacity: 0; transform: translate(-50%, -60%); }
+        }
+
+        /* Ajustes específicos para iOS Safari */
+        @supports (-webkit-touch-callout: none) {
+            .app-container {
+                height: -webkit-fill-available;
+            }
+            
+            input, textarea {
+                font-size: 16px !important;
+            }
+            
+            .chat-messages {
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior-y: contain;
+            }
+            
+            /* Prevenir selección accidental */
+            *:not(input):not(textarea) {
+                -webkit-user-select: none;
+                user-select: none;
+            }
+        }
+
+        /* Prevenir el bounce effect en iOS */
+        body {
+            overscroll-behavior-y: none;
+        }
+
+        .section {
+            overscroll-behavior: contain;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- App Header -->
+        <div class="app-header">
+            <h1 id="app-title">English Tutor</h1>
+            <div class="header-icons">
+                <i class="fas fa-home" id="home-btn" title="Home"></i>
+                <i class="fas fa-book" id="lessons-btn" title="My Lessons"></i>
+                <i class="fas fa-sliders-h" id="settings-btn" title="Settings"></i>
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <section class="section" id="form-section">
+            <div class="form-section">
+                <h2>Create Lesson</h2>
+                
+                <div class="form-group">
+                    <label for="topic">Topic</label>
+                    <input type="text" id="topic" placeholder="Travel, Business, Daily Life" value="Travel">
+                </div>
+                
+                <div class="form-group">
+                    <label for="level">Level</label>
+                    <select id="level">
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate" selected>Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="focus">Focus</label>
+                    <select id="focus">
+                        <option value="conversation">Conversation</option>
+                        <option value="vocabulary">Vocabulary</option>
+                        <option value="pronunciation">Pronunciation</option>
+                        <option value="grammar">Grammar</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="additional">Notes</label>
+                    <textarea id="additional" placeholder="Any specific requests?">Practice asking for directions and booking accommodations</textarea>
+                </div>
+                
+                <div class="form-buttons">
+                    <button class="btn btn-secondary" id="import-json-btn">
+                        <i class="fas fa-file-import"></i> Import JSON
+                    </button>
+                    <button class="btn btn-primary" id="generate-prompt-btn">
+                        <i class="fas fa-magic"></i> Generate Prompt
+                    </button>
+                </div>
+                
+                <!-- Prompt Section -->
+                <div class="prompt-section" id="prompt-section" style="display: none;">
+                    <h3>📋 AI Prompt Generated!</h3>
+                    <p style="font-size: 14px; color: var(--text-light); margin-bottom: 12px; text-align: center;">
+                        The prompt has been copied to your clipboard. Click an AI model below to open it in a new tab:
+                    </p>
+                    <div class="prompt-box" id="prompt-text"></div>
+                    <div class="form-buttons">
+                        <button class="btn btn-secondary" id="copy-prompt-btn">
+                            <i class="far fa-copy"></i> Copy Again
+                        </button>
+                        <button class="btn btn-primary" id="load-lesson-btn">
+                            <i class="fas fa-play"></i> Load Lesson
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- AI Models Section -->
+                <div class="ai-models-section" id="ai-models-section" style="display: none;">
+                    <h3>🤖 Choose AI Model to Generate Lesson</h3>
+                    <p style="font-size: 14px; color: var(--text-light); margin-bottom: 12px; text-align: center;">
+                        Click a model to open it in a new tab. The prompt is already in your clipboard!
+                    </p>
+                    
+                    <div class="ai-models-grid">
+                        <div class="ai-model-card chatgpt" data-model="chatgpt">
+                            <div class="model-icon chatgpt-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div class="model-info">
+                                <h4>ChatGPT</h4>
+                                <p style="font-size: 12px;">OpenAI • Best for creative conversations</p>
+                            </div>
+                            <button class="btn btn-chatgpt" style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px;">
+                                <i class="fas fa-external-link-alt"></i> Open ChatGPT
+                            </button>
+                        </div>
+                        
+                        <div class="ai-model-card deepseek" data-model="deepseek">
+                            <div class="model-icon deepseek-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="model-info">
+                                <h4>DeepSeek</h4>
+                                <p style="font-size: 12px;">DeepSeek • Fast & efficient reasoning</p>
+                            </div>
+                            <button class="btn btn-deepseek" style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px;">
+                                <i class="fas fa-external-link-alt"></i> Open DeepSeek
+                            </button>
+                        </div>
+                        
+                        <div class="ai-model-card gemini" data-model="gemini">
+                            <div class="model-icon gemini-icon">
+                                <i class="fas fa-gem"></i>
+                            </div>
+                            <div class="model-info">
+                                <h4>Gemini</h4>
+                                <p style="font-size: 12px;">Google • Accurate & up-to-date info</p>
+                            </div>
+                            <button class="btn btn-gemini" style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px;">
+                                <i class="fas fa-external-link-alt"></i> Open Gemini
+                            </button>
+                        </div>
+                        
+                        <div class="ai-model-card copilot" data-model="copilot">
+                            <div class="model-icon copilot-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="model-info">
+                                <h4>Copilot</h4>
+                                <p style="font-size: 12px;">Microsoft • Detailed with web search</p>
+                            </div>
+                            <button class="btn btn-copilot" style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px;">
+                                <i class="fas fa-external-link-alt"></i> Open Copilot
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <p style="font-size: 13px; color: var(--text-light); margin-top: 12px; text-align: center;">
+                        After generating the lesson JSON, paste it in the "Load Lesson" section above
+                    </p>
+                </div>
+                
+                <!-- Vocabulary Section -->
+                <div class="vocabulary-section" id="vocabulary-section" style="display: none; background: #f8f9fa; border-radius: 12px; padding: 16px; margin-top: 15px;">
+                    <h3>📚 Vocabulary (Optional)</h3>
+                    <textarea id="vocabulary-json" placeholder='Paste vocabulary JSON here or leave empty' style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); min-height: 80px; font-size: 14px; margin-bottom: 12px;"></textarea>
+                    <div class="form-buttons">
+                        <button class="btn btn-secondary" id="save-lesson-only-btn">
+                            <i class="fas fa-save"></i> Save Only
+                        </button>
+                        <button class="btn btn-primary" id="start-chat-btn">
+                            <i class="fas fa-comments"></i> Start Practice
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Chat Section -->
+        <section class="section hidden" id="chat-section">
+            <div class="chat-header">
+                <button class="back-btn" id="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="chat-header-info">
+                    <h3 id="chat-topic">English Practice</h3>
+                    <p id="chat-level">Intermediate Level</p>
+                </div>
+                <div class="header-icons">
+                    <i class="fas fa-save" id="save-chat-lesson-btn" title="Save Lesson"></i>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be added here -->
+            </div>
+            
+            <div class="input-area" id="input-area">
+                <input type="text" class="message-input" id="message-input" placeholder="Type or use voice..." disabled>
+                <button class="mic-btn" id="mic-btn" disabled>
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button class="btn btn-primary" id="send-btn" style="padding: 8px 16px; font-size: 16px; min-height: 50px; display: none;">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Lesson Manager -->
+        <section class="section hidden" id="lesson-manager">
+            <div class="lesson-manager">
+                <h2>📚 My Lessons</h2>
+                <div class="lessons-list" id="lessons-list">
+                    <!-- Lessons will be added here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Editor Section -->
+        <section class="section hidden" id="editor-section">
+            <div class="editor-section">
+                <h2>✏️ Edit Lesson</h2>
+                <div class="form-group">
+                    <label for="edit-topic">Topic</label>
+                    <input type="text" id="edit-topic">
+                </div>
+                <div class="form-group">
+                    <label for="edit-level">Level</label>
+                    <select id="edit-level">
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
+                <div class="dialogs-list" id="dialogs-list">
+                    <!-- Dialogs will be added here -->
+                </div>
+                <div class="form-buttons">
+                    <button class="btn btn-secondary" id="add-dialog-btn">
+                        <i class="fas fa-plus"></i> Add Dialog
+                    </button>
+                    <button class="btn btn-primary" id="save-edited-lesson-btn">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+                <button class="btn btn-secondary" id="back-to-manager-btn" style="margin-top: 20px; width: 100%;">
+                    <i class="fas fa-arrow-left"></i> Back to Lessons
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settings-panel">
+        <div class="settings-header">
+            <h2>⚙️ Settings</h2>
+            <button class="back-btn" id="close-settings-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="settings-content">
+            <div class="settings-group">
+                <h3>🎤 Voice Settings</h3>
+                <div class="settings-option">
+                    <label>Speed</label>
+                    <select id="voice-speed">
+                        <option value="0.8">Slow</option>
+                        <option value="1.0" selected>Normal</option>
+                        <option value="1.2">Fast</option>
+                    </select>
+                </div>
+                <div class="settings-option">
+                    <label>Accent</label>
+                    <select id="voice-accent">
+                        <option value="en-US">American</option>
+                        <option value="en-GB">British</option>
+                        <option value="en-AU">Australian</option>
+                    </select>
+                </div>
+                <div class="settings-option">
+                    <label>Auto-play</label>
+                    <select id="auto-play">
+                        <option value="yes" selected>Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="settings-group">
+                <h3>💾 Data Management</h3>
+                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 12px;" id="export-data-btn">
+                    <i class="fas fa-download"></i> Export All Data
+                </button>
+                <button class="btn btn-danger" style="width: 100%;" id="clear-data-btn">
+                    <i class="fas fa-trash"></i> Clear All Data
+                </button>
+            </div>
+            
+            <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" id="close-settings-btn2">
+                <i class="fas fa-check"></i> Close Settings
+            </button>
+        </div>
+    </div>
+    
+    <div class="overlay" id="overlay"></div>
+
+    <script>
+        // State Management
+        let currentLesson = null;
+        let currentQuestionIndex = 0;
+        let isRecording = false;
+        let recognition = null;
+        let conversationHistory = [];
+        let isConversationComplete = false;
+        let editingLessonId = null;
+        let currentPrompt = '';
+
+        // Eliminado: Todo lo relacionado con perfil y WebSocket
+        
+        // Local Storage Keys
+        const STORAGE_KEYS = {
+            LESSONS: 'english_tutor_lessons',
+            SETTINGS: 'english_tutor_settings'
+        };
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', initApp);
+        
+        function initApp() {
+            // Prevenir zoom con doble toque
+            document.addEventListener('dblclick', (e) => {
+                e.preventDefault();
+            }, { passive: false });
+            
+            // Prevenir zoom con gestos en iOS
+            document.addEventListener('gesturestart', (e) => {
+                e.preventDefault();
+            });
+            
+            // Prevenir bounce en iOS Safari
+            document.addEventListener('touchmove', (e) => {
+                if (e.target.closest('.chat-messages') || 
+                    e.target.closest('.form-section') || 
+                    e.target.closest('.lesson-manager') ||
+                    e.target.closest('.editor-section') ||
+                    e.target.closest('.settings-content')) {
+                    return;
+                }
+                e.preventDefault();
+            }, { passive: false });
+            
+            loadSettings();
+            loadLessons();
+            initSpeechRecognition();
+            setupEventListeners();
+            showSection('form-section');
+            
+            // Ajustar altura para iOS Safari
+            if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                document.documentElement.style.height = '-webkit-fill-available';
+                document.body.style.height = '-webkit-fill-available';
+                
+                // Forzar redibujado para iOS
+                setTimeout(() => {
+                    document.body.style.height = window.innerHeight + 'px';
+                }, 100);
+            }
+        }
+
+        function setupEventListeners() {
+            // Navigation
+            document.getElementById('home-btn').addEventListener('click', () => showSection('form-section'));
+            document.getElementById('lessons-btn').addEventListener('click', () => showSection('lesson-manager'));
+            document.getElementById('back-btn').addEventListener('click', goBack);
+            document.getElementById('back-to-manager-btn').addEventListener('click', () => showSection('lesson-manager'));
+            
+            // Form Section
+            document.getElementById('generate-prompt-btn').addEventListener('click', generatePrompt);
+            document.getElementById('copy-prompt-btn').addEventListener('click', copyPrompt);
+            document.getElementById('load-lesson-btn').addEventListener('click', loadLesson);
+            document.getElementById('start-chat-btn').addEventListener('click', startChat);
+            document.getElementById('import-json-btn').addEventListener('click', importJson);
+            document.getElementById('save-lesson-only-btn').addEventListener('click', saveLessonOnly);
+            
+            // Chat Section
+            document.getElementById('save-chat-lesson-btn').addEventListener('click', saveCurrentLesson);
+            document.getElementById('mic-btn').addEventListener('click', toggleRecording);
+            document.getElementById('send-btn').addEventListener('click', sendMessage);
+            document.getElementById('message-input').addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+            document.getElementById('message-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !isConversationComplete && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // Settings
+            document.getElementById('settings-btn').addEventListener('click', openSettings);
+            document.getElementById('close-settings-btn').addEventListener('click', closeSettings);
+            document.getElementById('close-settings-btn2').addEventListener('click', closeSettings);
+            document.getElementById('export-data-btn').addEventListener('click', exportAllData);
+            document.getElementById('clear-data-btn').addEventListener('click', clearAllData);
+            
+            // Editor
+            document.getElementById('add-dialog-btn').addEventListener('click', addDialog);
+            document.getElementById('save-edited-lesson-btn').addEventListener('click', saveEditedLesson);
+            
+            // Close settings when clicking overlay
+            document.getElementById('overlay').addEventListener('click', closeSettings);
+            
+            // AI Model buttons
+            document.querySelectorAll('.ai-model-card button').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    const card = this.closest('.ai-model-card');
+                    const modelId = card.dataset.model;
+                    openAIWithPrompt(modelId);
+                });
+            });
+            
+            // Also make the whole card clickable
+            document.querySelectorAll('.ai-model-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (!e.target.closest('button')) {
+                        const modelId = this.dataset.model;
+                        openAIWithPrompt(modelId);
+                    }
+                });
+            });
+            
+            // Prevenir scroll en body pero permitirlo en áreas específicas
+            document.addEventListener('touchmove', function(e) {
+                const target = e.target;
+                const isInScrollableArea = target.closest('.chat-messages') || 
+                                          target.closest('.form-section') || 
+                                          target.closest('.lesson-manager') ||
+                                          target.closest('.editor-section') ||
+                                          target.closest('.settings-content');
+                
+                if (!isInScrollableArea && e.touches.length === 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+        }
+
+        function openAIWithPrompt(modelId) {
+            if (!currentPrompt) {
+                showNotification('Please generate a prompt first!');
+                return;
+            }
+            
+            const AI_MODELS = {
+                chatgpt: { name: "ChatGPT", url: "https://chatgpt.com" },
+                deepseek: { name: "DeepSeek", url: "https://chat.deepseek.com" },
+                gemini: { name: "Gemini", url: "https://gemini.google.com" },
+                copilot: { name: "Copilot", url: "https://copilot.microsoft.com" }
+            };
+            
+            const model = AI_MODELS[modelId];
+            if (!model) {
+                showNotification('Model not found!');
+                return;
+            }
+            
+            // Confirmación antes de abrir
+            if (confirm(`Open ${model.name} in a new tab?\n\nThe prompt is already in your clipboard.`)) {
+                window.open(model.url, '_blank', 'noopener,noreferrer');
+                
+                setTimeout(() => {
+                    showNotification(`🌐 ${model.name} opened!\n\n📋 Prompt copied to clipboard.\n\n1. Paste (Ctrl+V / Cmd+V)\n2. Copy the JSON response\n3. Return here and click "Load Lesson"`);
+                }, 100);
+            }
+        }
+
+        // Section Management
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.getElementById(sectionId).classList.remove('hidden');
+            document.getElementById('app-title').textContent = 
+                sectionId === 'form-section' ? 'English Tutor' :
+                sectionId === 'chat-section' ? 'Practice' :
+                sectionId === 'lesson-manager' ? 'My Lessons' :
+                sectionId === 'editor-section' ? 'Edit Lesson' : 'English Tutor';
+            
+            // Close settings if open
+            closeSettings();
+            
+            // Scroll to top
+            setTimeout(() => {
+                const section = document.getElementById(sectionId);
+                if (section.scrollTo) {
+                    section.scrollTo(0, 0);
+                } else {
+                    section.scrollTop = 0;
+                }
+            }, 10);
+            
+            // Forzar redibujado en iOS
+            if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                document.body.style.height = window.innerHeight + 'px';
+            }
+        }
+
+        function goBack() {
+            if (document.getElementById('chat-section').classList.contains('hidden')) {
+                showSection('form-section');
+            } else {
+                showSection('lesson-manager');
+            }
+        }
+
+        function showNotification(message) {
+            // Remover notificaciones anteriores
+            document.querySelectorAll('.notification').forEach(n => n.remove());
+            
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+
+        // PROMPT GENERATION FUNCTION
+        function generatePrompt() {
+            const topic = document.getElementById('topic').value.trim() || "Everyday Conversations";
+            const level = document.getElementById('level').value;
+            const focus = document.getElementById('focus').value;
+            const notes = document.getElementById('additional').value.trim();
+            
+            currentPrompt = `Create a detailed English conversation lesson JSON for a language learning app.
+
+LESSON DETAILS:
+- Topic: ${topic}
+- Student Level: ${level}
+- Focus Area: ${focus}
+${notes ? `- Additional Notes: ${notes}\n` : ''}
+
+REQUIRED JSON STRUCTURE:
+{
+  "lesson": {
+    "topic": "${topic}",
+    "level": "${level}",
+    "focus": "${focus}",
+    "description": "A detailed ${level} level conversation about ${topic} focusing on ${focus}",
+    "conversation": [
+      {
+        "speaker": "bot",
+        "message": "Bot's opening question here",
+        "expectedResponses": ["keyword1", "keyword2", "keyword3"],
+        "minLength": ${level === 'beginner' ? 4 : level === 'intermediate' ? 6 : 8},
+        "hints": ["Hint 1", "Hint 2", "Hint 3"]
+      }
+    ]
+  }
+}
+
+SPECIFIC REQUIREMENTS:
+1. Create ${level === 'beginner' ? '4' : level === 'intermediate' ? '5' : '6'} conversation turns
+2. Each bot message should be a question or prompt that requires a substantive answer
+3. For each turn, provide 3-5 expected responses (keywords or phrases the user might use)
+4. Set minLength based on level: Beginner=4, Intermediate=6, Advanced=8 words minimum
+5. Include 2-3 helpful hints for each question
+6. The conversation should flow naturally and progressively increase in complexity
+7. Make it engaging and practical for real-life situations
+
+Please generate the complete JSON now. Return ONLY the JSON object, no additional text.`;
+
+            document.getElementById('prompt-text').textContent = currentPrompt;
+            
+            // Copy automáticamente al portapapeles
+            copyPromptToClipboard();
+            
+            // Mostrar secciones
+            document.getElementById('prompt-section').style.display = 'block';
+            document.getElementById('ai-models-section').style.display = 'block';
+            
+            // Desplazar a la vista
+            setTimeout(() => {
+                document.getElementById('prompt-section').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+            
+            // Mostrar notificación
+            showNotification('📋 Prompt copied to clipboard!\n🤖 Choose an AI model below.');
+        }
+
+        function copyPrompt() {
+            copyPromptToClipboard();
+            showNotification('Prompt copied to clipboard again!');
+        }
+
+        function copyPromptToClipboard() {
+            if (!currentPrompt) {
+                showNotification('No prompt generated yet!');
+                return;
+            }
+            
+            navigator.clipboard.writeText(currentPrompt)
+                .then(() => {
+                    console.log('Prompt copied to clipboard');
+                })
+                .catch(err => {
+                    console.error('Copy failed:', err);
+                    // Fallback method
+                    const textArea = document.createElement('textarea');
+                    textArea.value = currentPrompt;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                });
+        }
+
+        function loadLesson() {
+            const jsonStr = prompt('Paste the lesson JSON generated by AI:', getSampleLessonJSON());
+            
+            if (!jsonStr) {
+                alert('No JSON provided. Using sample lesson.');
+                currentLesson = JSON.parse(getSampleLessonJSON());
+            } else {
+                try {
+                    currentLesson = JSON.parse(jsonStr);
+                    if (!currentLesson.lesson || !currentLesson.lesson.conversation) {
+                        throw new Error('Invalid lesson format');
+                    }
+                    // AUTO-SAVE when loading a lesson
+                    saveLessonToStorage(currentLesson.lesson);
+                } catch (error) {
+                    console.error('Invalid JSON:', error);
+                    alert('Invalid JSON format. Using sample lesson.');
+                    currentLesson = JSON.parse(getSampleLessonJSON());
+                    saveLessonToStorage(currentLesson.lesson);
+                }
+            }
+            
+            // Update chat header
+            if (currentLesson.lesson) {
+                document.getElementById('chat-topic').textContent = currentLesson.lesson.topic || 'English Practice';
+                document.getElementById('chat-level').textContent = (currentLesson.lesson.level || 'Intermediate') + ' Level';
+            }
+            
+            document.getElementById('vocabulary-json').value = ''; // Clear previous vocab
+            document.getElementById('vocabulary-section').style.display = 'block';
+            document.getElementById('vocabulary-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function saveLessonOnly() {
+            if (!currentLesson || !currentLesson.lesson) {
+                alert('No lesson to save! Please load a lesson first.');
+                return;
+            }
+            
+            saveLessonToStorage(currentLesson.lesson);
+            alert('Lesson saved to your collection!');
+            showSection('lesson-manager');
+        }
+
+        function saveLessonToStorage(lessonData) {
+            const lessons = JSON.parse(localStorage.getItem(STORAGE_KEYS.LESSONS) || '[]');
+            
+            // Check if lesson already exists (by topic)
+            const existingIndex = lessons.findIndex(l => l.topic === lessonData.topic && l.level === lessonData.level);
+            
+            const lessonToSave = {
+                id: Date.now(),
+                topic: lessonData.topic,
+                level: lessonData.level,
+                focus: lessonData.focus || "conversation",
+                conversation: lessonData.conversation,
+                description: lessonData.description || "",
+                createdAt: new Date().toISOString(),
+                lastPracticed: new Date().toISOString()
+            };
+            
+            if (existingIndex !== -1) {
+                // Update existing lesson
+                lessons[existingIndex] = {
+                    ...lessons[existingIndex],
+                    ...lessonToSave,
+                    updatedAt: new Date().toISOString()
+                };
+            } else {
+                // Add new lesson
+                lessons.push(lessonToSave);
+            }
+            
+            localStorage.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(lessons));
+            loadLessons(); // Refresh the list
+        }
+
+        function getSampleLessonJSON() {
+            return JSON.stringify({
+                "lesson": {
+                    "topic": "Travel",
+                    "level": "intermediate",
+                    "focus": "conversation",
+                    "description": "An intermediate level conversation about travel and tourism",
+                    "conversation": [
+                        {
+                            "speaker": "bot",
+                            "message": "Hello! Let's practice English conversation about travel. First, please introduce yourself. Tell me your name and where you're from.",
+                            "expectedResponses": ["my name is", "i am", "i'm from", "from", "live in", "originally from"],
+                            "minLength": 6,
+                            "hints": ["Say: My name is [name] and I'm from [place].", "Try: I'm [name] and I live in [city/country].", "Example: Hello, my name is John and I'm from New York."]
+                        },
+                        {
+                            "speaker": "bot",
+                            "message": "Nice to meet you! Have you traveled to any interesting places recently?",
+                            "expectedResponses": ["traveled to", "visited", "went to", "recently", "last year", "vacation", "trip"],
+                            "minLength": 7,
+                            "hints": ["Example: I visited [country] last [month/year].", "Try: Recently, I went to [place] and...", "You can say: Yes, I traveled to Paris last summer."]
+                        },
+                        {
+                            "speaker": "bot",
+                            "message": "That sounds interesting! What was your favorite part of that trip?",
+                            "expectedResponses": ["favorite part", "enjoyed", "liked", "best thing", "memorable", "experience"],
+                            "minLength": 7,
+                            "hints": ["You can mention: The food, the people, the sights, or the activities.", "Example: My favorite part was trying the local cuisine.", "Try: I really enjoyed visiting the historical landmarks."]
+                        }
+                    ]
+                }
+            }, null, 2);
+        }
+
+        function startChat() {
+            // Try to parse vocabulary if provided
+            const vocabJson = document.getElementById('vocabulary-json').value.trim();
+            if (vocabJson) {
+                try {
+                    const vocab = JSON.parse(vocabJson);
+                    if (vocab.vocabulary) {
+                        console.log('Vocabulary loaded:', vocab.vocabulary.length, 'words');
+                        if (currentLesson) {
+                            currentLesson.vocabulary = vocab.vocabulary;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Invalid vocabulary JSON, continuing without it');
+                }
+            }
+            
+            // Auto-save the lesson before starting chat
+            if (currentLesson && currentLesson.lesson) {
+                saveLessonToStorage(currentLesson.lesson);
+            }
+            
+            // Switch to chat view
+            showSection('chat-section');
+            
+            // Reset state
+            document.getElementById('chat-messages').innerHTML = '';
+            currentQuestionIndex = 0;
+            conversationHistory = [];
+            isConversationComplete = false;
+            
+            // Enable input
+            document.getElementById('message-input').disabled = false;
+            document.getElementById('mic-btn').disabled = false;
+            document.getElementById('send-btn').disabled = false;
+            document.getElementById('input-area').classList.remove('disabled');
+            
+            // Start conversation
+            setTimeout(() => {
+                if (currentLesson && currentLesson.lesson && currentLesson.lesson.conversation && currentLesson.lesson.conversation.length > 0) {
+                    addBotMessageWithHints(currentLesson.lesson.conversation[0].message, 0, true);
+                    currentQuestionIndex = 1;
+                } else {
+                    // Fallback if no lesson
+                    currentLesson = JSON.parse(getSampleLessonJSON());
+                    addBotMessageWithHints(currentLesson.lesson.conversation[0].message, 0, true);
+                    currentQuestionIndex = 1;
+                }
+            }, 500);
+        }
+
+        // Lesson Management Functions
+        function loadLessons() {
+            const lessons = JSON.parse(localStorage.getItem(STORAGE_KEYS.LESSONS) || '[]');
+            const lessonsList = document.getElementById('lessons-list');
+            
+            if (lessons.length === 0) {
+                lessonsList.innerHTML = `
+                    <div class="no-lessons">
+                        <i class="fas fa-book-open"></i>
+                        <p>No saved lessons yet</p>
+                        <p style="font-size: 12px; margin-top: 10px;">Create or import a lesson to get started</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            lessonsList.innerHTML = '';
+            lessons.forEach((lesson, index) => {
+                const lessonItem = document.createElement('div');
+                lessonItem.className = 'lesson-item';
+                lessonItem.innerHTML = `
+                    <div class="lesson-info">
+                        <h4>${lesson.topic || 'Untitled Lesson'}</h4>
+                        <p>
+                            <span>${lesson.level || 'intermediate'}</span>
+                            <span>•</span>
+                            <span>${lesson.conversation ? lesson.conversation.length : 0} dialogs</span>
+                            <span>•</span>
+                            <span>${new Date(lesson.createdAt).toLocaleDateString()}</span>
+                        </p>
+                    </div>
+                    <div class="lesson-actions">
+                        <button class="lesson-btn play" onclick="playLesson(${index})" title="Practice">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="lesson-btn edit" onclick="editLesson(${index})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="lesson-btn delete" onclick="deleteLesson(${index})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                lessonsList.appendChild(lessonItem);
+            });
+        }
+
+        function saveCurrentLesson() {
+            if (!currentLesson || !currentLesson.lesson) {
+                alert('No lesson to save! Please create or load a lesson first.');
+                return;
+            }
+            
+            saveLessonToStorage(currentLesson.lesson);
+            alert('Lesson saved successfully!');
+        }
+
+        window.playLesson = function(index) {
+            const lessons = JSON.parse(localStorage.getItem(STORAGE_KEYS.LESSONS) || '[]');
+            if (!lessons[index]) {
+                alert('Lesson not found!');
+                return;
+            }
+            
+            currentLesson = { lesson: lessons[index] };
+            startChat();
+        };
+
+        window.editLesson = function(index) {
+            const lessons = JSON.parse(localStorage.getItem(STORAGE_KEYS.LESSONS) || '[]');
+            if (!lessons[index]) {
+                alert('Lesson not found!');
+                return;
+            }
+            
+            editingLessonId = index;
+            const lesson = lessons[index];
+            
+            document.getElementById('edit-topic').value = lesson.topic || '';
+            document.getElementById('edit-level').value = lesson.level || 'intermediate';
+            
+            const dialogsList = document.getElementById('dialogs-list');
+            dialogsList.innerHTML = '';
+            
+            if (lesson.conversation && lesson.conversation.length > 0) {
+                lesson.conversation.forEach((dialog, dialogIndex) => {
+                    addDialogToEditor(dialog, dialogIndex);
+                });
+            } else {
+                // Add a default dialog if none exist
+                addDialog();
+            }
+            
+            showSection('editor-section');
+        };
+
+        function addDialog() {
+            const dialogs = document.querySelectorAll('.dialog-item');
+            const newDialog = {
+                speaker: "bot",
+                message: "Enter your message here...",
+                expectedResponses: ["keyword1", "keyword2"],
+                minLength: 6,
+                hints: ["Hint 1", "Hint 2", "Hint 3"]
+            };
+            
+            addDialogToEditor(newDialog, dialogs.length);
+        }
+
+        function addDialogToEditor(dialog, index) {
+            const dialogsList = document.getElementById('dialogs-list');
+            const dialogItem = document.createElement('div');
+            dialogItem.className = 'dialog-item';
+            dialogItem.innerHTML = `
+                <div class="dialog-header">
+                    <h4>Dialog ${index + 1}</h4>
+                    <div class="dialog-actions">
+                        <button class="dialog-btn" onclick="moveDialogUp(${index})" ${index === 0 ? 'disabled' : ''}>
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <button class="dialog-btn" onclick="moveDialogDown(${index})">
+                            <i class="fas fa-arrow-down"></i>
+                        </button>
+                        <button class="dialog-btn" onclick="deleteDialog(${index})" style="color: #ff3b30;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="dialog-content">
+                    <textarea placeholder="Bot message..." data-index="${index}" data-field="message">${dialog.message}</textarea>
+                    <div class="form-group">
+                        <label>Expected Responses (comma separated)</label>
+                        <input type="text" placeholder="keyword1, keyword2" 
+                               data-index="${index}" data-field="expectedResponses" 
+                               value="${Array.isArray(dialog.expectedResponses) ? dialog.expectedResponses.join(', ') : dialog.expectedResponses}">
+                    </div>
+                    <div class="form-group">
+                        <label>Minimum Words</label>
+                        <input type="number" min="1" max="20" 
+                               data-index="${index}" data-field="minLength" 
+                               value="${dialog.minLength || 6}">
+                    </div>
+                    <div class="form-group">
+                        <label>Hints (one per line, 2-3 hints recommended)</label>
+                        <textarea placeholder="Hint 1\nHint 2\nHint 3" 
+                                  data-index="${index}" data-field="hints"
+                                  style="min-height: 80px;">${Array.isArray(dialog.hints) ? dialog.hints.join('\n') : dialog.hints}</textarea>
+                    </div>
+                </div>
+            `;
+            dialogsList.appendChild(dialogItem);
+        }
+
+        // Global functions for dialog management
+        window.moveDialogUp = function(index) {
+            if (index === 0) return;
+            swapDialogs(index, index - 1);
+        };
+
+        window.moveDialogDown = function(index) {
+            const dialogs = document.querySelectorAll('.dialog-item');
+            if (index === dialogs.length - 1) return;
+            swapDialogs(index, index + 1);
+        };
+
+        window.deleteDialog = function(index) {
+            if (!confirm('Delete this dialog?')) return;
+            
+            const dialogsList = document.getElementById('dialogs-list');
+            const dialogToRemove = dialogsList.children[index];
+            dialogsList.removeChild(dialogToRemove);
+            
+            // Re-index remaining dialogs
+            Array.from(dialogsList.children).forEach((dialog, newIndex) => {
+                dialog.querySelector('h4').textContent = `Dialog ${newIndex + 1}`;
+                dialog.querySelectorAll('[data-index]').forEach(el => {
+                    el.dataset.index = newIndex;
+                });
+            });
+        };
+
+        function swapDialogs(index1, index2) {
+            const dialogsList = document.getElementById('dialogs-list');
+            const dialogs = Array.from(dialogsList.children);
+            
+            // Swap in array
+            [dialogs[index1], dialogs[index2]] = [dialogs[index2], dialogs[index1]];
+            
+            // Clear and re-add
+            dialogsList.innerHTML = '';
+            dialogs.forEach(dialog => dialogsList.appendChild(dialog));
+            
+            // Update indices
+            Array.from(dialogsList.children).forEach((dialog, index) => {
+                dialog.querySelector('h4').textContent = `Dialog ${index + 1}`;
+                dialog.querySelectorAll('[data-index]').forEach(el => {
+                    el.dataset.index = index;
+                });
+            });
+        }
+
+        function saveEditedLesson() {
+            const topic = document.getElementById('edit-topic').value.trim();
+            const level = document.getElementById('edit-level').value;
+            
+            if (!topic) {
+                alert('Please enter a topic');
+                return;
+            }
+            
+            const dialogs = [];
+            document.querySelectorAll('.dialog-item').forEach(dialogItem => {
+                const index = dialogItem.querySelector('[data-index]').dataset.index;
+                const message = dialogItem.querySelector('[data-field="message"]').value;
+                const expectedResponses = dialogItem.querySelector('[data-field="expectedResponses"]').value
+                    .split(',')
+                    .map(r => r.trim())
+                    .filter(r => r);
+                const minLength = parseInt(dialogItem.querySelector('[data-field="minLength"]').value) || 6;
+                const hints = dialogItem.querySelector('[data-field="hints"]').value
+                    .split('\n')
+                    .map(h => h.trim())
+                    .filter(h => h);
+                
+                if (message && message !== "Enter your message here...") {
+                    dialogs.push({
+                        speaker: "bot",
+                        message: message,
+                        expectedResponses: expectedResponses,
+                        minLength: minLength,
+                        hints: hints
+                    });
+                }
+            });
+            
+            if (dialogs.length === 0) {
+                alert('Please add at least one valid dialog');
+                return;
+            }
+            
+            const lessons = JSON.parse(localStorage.getItem(STORAGE_KEYS.LESSONS) || '[]');
+            
+            if (editingLessonId !== null && lessons[editingLessonId]) {
+                lessons[editingLessonId] = {
+                    ...lessons[editingLessonId],
+                    topic: topic,
+                    level: level,
+                    conversation: dialogs,
+                    updatedAt: new Date().toISOString()
+                };
+            } else {
+                lessons.push({
+                    id: Date.now(),
+                    topic: topic,
+                    level: level,
+                    focus: "conversation",
+                    conversation: dialogs,
+                    createdAt: new Date().toISOString(),
+                    lastPracticed: new Date().toISOString()
+                });
+            }
+            
+            localStorage.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(lessons));
+            editingLessonId = null;
+            loadLessons();
+            showSection('lesson-manager');
+            alert('Lesson saved successfully!');
+        }
+
+        window.deleteLesson = function(index) {
+            if (!confirm('Are you sure you want to delete this lesson?')) return;
+            
+            const lessons = JSON.parse(localStorage.getItem(STORAGE_KEYS.LESSONS) || '[]');
+            lessons.splice(index, 1);
+            localStorage.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(lessons));
+            loadLessons();
+        };
+
+        // Chat Functions
+        function addBotMessageWithHints(message, questionIndex, autoPlay = false) {
+            const chatMessages = document.getElementById('chat-messages');
+            
+            // Main bot message
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message message-bot';
+            messageDiv.innerHTML = `
+                <div>${message}</div>
+                <div class="message-time">
+                    <span>Bot • Just now</span>
+                    <button class="listen-btn" onclick="playMessage(this)">
+                        <i class="fas fa-volume-up"></i> Listen
+                    </button>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            
+            // Get hints for the specific question index
+            let hints = [];
+            if (currentLesson && currentLesson.lesson && currentLesson.lesson.conversation) {
+                if (questionIndex >= 0 && questionIndex < currentLesson.lesson.conversation.length) {
+                    const currentQuestion = currentLesson.lesson.conversation[questionIndex];
+                    if (currentQuestion.hints && Array.isArray(currentQuestion.hints) && currentQuestion.hints.length > 0) {
+                        hints = currentQuestion.hints;
+                    }
+                }
+            }
+            
+            // Add hint bubble if hints exist
+            if (hints.length > 0) {
+                const hintBubble = document.createElement('div');
+                hintBubble.className = 'hint-bubble';
+                hintBubble.innerHTML = `
+                    <div class="hint-header" onclick="toggleHint(this)">
+                        <h4><i class="fas fa-lightbulb"></i> Need help? Click to see ${hints.length} hint${hints.length > 1 ? 's' : ''}</h4>
+                        <button class="hint-toggle">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="hint-content">
+                        <ul class="hint-list">
+                            ${hints.map(hint => `<li class="hint-item">${hint}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                chatMessages.appendChild(hintBubble);
+            }
+            
+            // Scroll to bottom smoothly
+            setTimeout(() => {
+                chatMessages.scrollTo({
+                    top: chatMessages.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 100);
+            
+            // Auto-play
+            if (autoPlay && document.getElementById('auto-play').value === 'yes') {
+                setTimeout(() => playMessage(messageDiv.querySelector('.listen-btn')), 800);
+            }
+            
+            conversationHistory.push({
+                speaker: 'bot',
+                message: message,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+        }
+
+        // Toggle hint bubble
+        window.toggleHint = function(headerElement) {
+            const hintContent = headerElement.nextElementSibling;
+            const toggleButton = headerElement.querySelector('.hint-toggle i');
+            
+            if (hintContent.classList.contains('expanded')) {
+                hintContent.classList.remove('expanded');
+                toggleButton.className = 'fas fa-chevron-down';
+            } else {
+                hintContent.classList.add('expanded');
+                toggleButton.className = 'fas fa-chevron-up';
+            }
+        };
+
+        function addUserMessage(text) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message message-user';
+            messageDiv.innerHTML = `
+                <div>${text}</div>
+                <div class="message-time">
+                    <span>You • Just now</span>
+                    <button class="listen-btn" onclick="playMessage(this)" style="color: white; opacity: 0.8;">
+                        <i class="fas fa-volume-up"></i> Listen
+                    </button>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            
+            // Scroll to bottom smoothly
+            setTimeout(() => {
+                chatMessages.scrollTo({
+                    top: chatMessages.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 100);
+            
+            conversationHistory.push({
+                speaker: 'user',
+                message: text,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+        }
+
+        function sendMessage() {
+            if (isConversationComplete) return;
+            
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            addUserMessage(text);
+            input.value = '';
+            
+            setTimeout(() => processUserResponse(text), 1000);
+        }
+
+        function processUserResponse(userText) {
+            if (!currentLesson || !currentLesson.lesson || !currentLesson.lesson.conversation || currentQuestionIndex < 1) {
+                addBotMessageWithHints("Thanks! What would you like to talk about?", 0, true);
+                return;
+            }
+            
+            const currentQIndex = currentQuestionIndex - 1;
+            if (currentQIndex >= currentLesson.lesson.conversation.length) {
+                return;
+            }
+            
+            const currentQuestion = currentLesson.lesson.conversation[currentQIndex];
+            const userTextLower = userText.toLowerCase();
+            
+            // Check for expected responses
+            let hasExpected = false;
+            for (const expected of currentQuestion.expectedResponses) {
+                if (userTextLower.includes(expected.toLowerCase())) {
+                    hasExpected = true;
+                    break;
+                }
+            }
+            
+            // Check length
+            const wordCount = userText.split(/\s+/).filter(word => word.length > 0).length;
+            const hasGoodLength = wordCount >= (currentQuestion.minLength || 6);
+            
+            // Provide feedback if needed
+            if (!hasExpected || !hasGoodLength) {
+                let feedback = "";
+                if (!hasExpected && !hasGoodLength) {
+                    feedback = `Try to make your answer longer (at least ${currentQuestion.minLength || 6} words) and include relevant vocabulary.`;
+                } else if (!hasExpected) {
+                    feedback = `Good length! Try to include some of these phrases: ${currentQuestion.expectedResponses.slice(0, 3).join(', ')}`;
+                } else if (!hasGoodLength) {
+                    feedback = `Good vocabulary! Try to make your answer a bit longer (aim for ${currentQuestion.minLength || 6} words).`;
+                }
+                
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.className = 'feedback-message';
+                feedbackDiv.textContent = feedback;
+                document.getElementById('chat-messages').appendChild(feedbackDiv);
+                
+                setTimeout(() => {
+                    document.getElementById('chat-messages').scrollTo({
+                        top: document.getElementById('chat-messages').scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 100);
+                
+                return;
+            }
+            
+            // Good response - check if conversation is complete
+            if (currentQuestionIndex < currentLesson.lesson.conversation.length) {
+                const nextQuestion = currentLesson.lesson.conversation[currentQuestionIndex];
+                setTimeout(() => {
+                    // Pasar el índice correcto: currentQuestionIndex (no currentQuestionIndex - 1)
+                    addBotMessageWithHints(nextQuestion.message, currentQuestionIndex, true);
+                    currentQuestionIndex++;
+                }, 1500);
+            } else {
+                // Conversation complete
+                isConversationComplete = true;
+                disableInput();
+                showCompletionScreen();
+            }
+        }
+
+        function disableInput() {
+            document.getElementById('message-input').disabled = true;
+            document.getElementById('mic-btn').disabled = true;
+            document.getElementById('send-btn').disabled = true;
+            document.getElementById('input-area').classList.add('disabled');
+        }
+
+        function showCompletionScreen() {
+            setTimeout(() => {
+                const chatMessages = document.getElementById('chat-messages');
+                const completionDiv = document.createElement('div');
+                completionDiv.className = 'conversation-complete';
+                completionDiv.innerHTML = `
+                    <i class="fas fa-trophy"></i>
+                    <h3>Lesson Complete! 🎉</h3>
+                    <p>Great job! You've successfully completed this conversation practice.</p>
+                    <div class="complete-buttons">
+                        <button class="btn btn-success" onclick="goToLessons()">
+                            <i class="fas fa-book"></i> My Lessons
+                        </button>
+                        <button class="btn btn-primary" onclick="goToHome()">
+                            <i class="fas fa-home"></i> Create New Lesson
+                        </button>
+                    </div>
+                `;
+                chatMessages.appendChild(completionDiv);
+                
+                setTimeout(() => {
+                    chatMessages.scrollTo({
+                        top: chatMessages.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 100);
+            }, 1500);
+        }
+
+        window.goToLessons = function() {
+            showSection('lesson-manager');
+        };
+
+        window.goToHome = function() {
+            showSection('form-section');
+        };
+
+        // Speech Functions
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+                
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    document.getElementById('message-input').value = transcript;
+                    if (!isConversationComplete && transcript.split(' ').length >= 2) {
+                        setTimeout(sendMessage, 500);
+                    }
+                };
+                
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    stopRecording();
+                };
+                
+                recognition.onend = stopRecording;
+            }
+        }
+
+        function toggleRecording() {
+            if (!recognition || isConversationComplete) return;
+            
+            if (!isRecording) {
+                startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+
+        function startRecording() {
+            try {
+                recognition.start();
+                isRecording = true;
+                document.getElementById('mic-btn').classList.add('recording');
+                document.getElementById('mic-btn').innerHTML = '<i class="fas fa-stop"></i>';
+            } catch (error) {
+                console.error('Failed to start recording:', error);
+                stopRecording();
+            }
+        }
+
+        function stopRecording() {
+            isRecording = false;
+            document.getElementById('mic-btn').classList.remove('recording');
+            document.getElementById('mic-btn').innerHTML = '<i class="fas fa-microphone"></i>';
+        }
+
+        window.playMessage = function(button) {
+            const messageDiv = button.closest('.message');
+            const text = messageDiv.querySelector('div:first-child').textContent;
+            
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = document.getElementById('voice-accent').value;
+                utterance.rate = parseFloat(document.getElementById('voice-speed').value);
+                
+                const icon = button.querySelector('i');
+                if (icon) {
+                    icon.className = 'fas fa-volume-mute';
+                    
+                    utterance.onend = () => {
+                        icon.className = 'fas fa-volume-up';
+                    };
+                }
+                
+                speechSynthesis.speak(utterance);
+            }
+        };
+
+        // Settings Management
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem(STORAGE_KEYS.SETTINGS) || '{}');
+            
+            document.getElementById('voice-speed').value = settings.voiceSpeed || '1.0';
+            document.getElementById('voice-accent').value = settings.voiceAccent || 'en-US';
+            document.getElementById('auto-play').value = settings.autoPlay || 'yes';
+            
+            // Save changes
+            ['voice-speed', 'voice-accent', 'auto-play'].forEach(id => {
+                document.getElementById(id).addEventListener('change', saveSettings);
+            });
+        }
+
+        function saveSettings() {
+            const settings = {
+                voiceSpeed: document.getElementById('voice-speed').value,
+                voiceAccent: document.getElementById('voice-accent').value,
+                autoPlay: document.getElementById('auto-play').value
+            };
+            
+            localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+        }
+
+        function openSettings() {
+            document.getElementById('settings-panel').classList.add('active');
+            document.getElementById('overlay').classList.add('active');
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-panel').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        // Data Management
+        function exportAllData() {
+            const lessons = JSON.parse(localStorage.getItem(STORAGE_KEYS.LESSONS) || '[]');
+            const settings = JSON.parse(localStorage.getItem(STORAGE_KEYS.SETTINGS) || '{}');
+            
+            const data = {
+                lessons: lessons,
+                settings: settings,
+                exportedAt: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `english-tutor-backup-${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearAllData() {
+            if (!confirm('This will delete all your lessons and settings. Are you sure?')) return;
+            
+            localStorage.removeItem(STORAGE_KEYS.LESSONS);
+            localStorage.removeItem(STORAGE_KEYS.SETTINGS);
+            alert('All data cleared successfully!');
+            loadLessons();
+            loadSettings();
+            closeSettings();
+        }
+
+        // Import JSON function - AUTO-SAVE ON IMPORT
+        function importJson() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const json = JSON.parse(e.target.result);
+                        
+                        // Check if it's a lesson
+                        if (json.lesson) {
+                            currentLesson = json;
+                            // AUTO-SAVE the imported lesson
+                            saveLessonToStorage(json.lesson);
+                            
+                            // Fill form fields
+                            document.getElementById('topic').value = json.lesson.topic || '';
+                            document.getElementById('level').value = json.lesson.level || 'intermediate';
+                            document.getElementById('focus').value = json.lesson.focus || 'conversation';
+                            document.getElementById('additional').value = json.lesson.description || '';
+                            
+                            alert('Lesson imported and saved successfully! You can find it in "My Lessons".');
+                            showSection('lesson-manager');
+                        } else if (json.lessons) {
+                            // It's a backup file - import all lessons
+                            const existingLessons = JSON.parse(localStorage.getItem(STORAGE_KEYS.LESSONS) || '[]');
+                            const newLessons = [...existingLessons, ...json.lessons];
+                            localStorage.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(newLessons));
+                            
+                            if (json.settings) {
+                                localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(json.settings));
+                            }
+                            loadLessons();
+                            loadSettings();
+                            alert('Backup restored successfully! ' + json.lessons.length + ' lessons imported.');
+                            showSection('lesson-manager');
+                        } else {
+                            // Assume it's vocabulary
+                            document.getElementById('vocabulary-json').value = JSON.stringify(json, null, 2);
+                            alert('Vocabulary imported! It will be used when you start the chat.');
+                        }
+                    } catch (error) {
+                        console.error('Error parsing JSON:', error);
+                        alert('Invalid JSON file. Please check the format.');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+    </script>
+</body>
+</html>

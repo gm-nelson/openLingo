@@ -1907,26 +1907,27 @@ const appState = {
 };
 
 // ==================== LECCIONES POR DEFECTO ====================
+// ==================== LECCIONES POR DEFECTO ====================
 const defaultLessons = [
     {
         id: 'lesson-1',
-        title: 'Inglés Básico: Saludos y Presentaciones',
-        language: 'Inglés',
-        level: 'principiante',
-        topic: 'Saludos',
-        tags: ['básico', 'conversación', 'presentaciones'],
+        title: 'English Basics: Greetings and Introductions',
+        language: 'English',
+        level: 'beginner',
+        topic: 'Greetings',
+        tags: ['basic', 'conversation', 'introductions'],
         estimatedTime: 15,
         createdAt: new Date().toISOString(),
-        author: 'Sistema',
+        author: 'System',
         sections: [
             {
                 type: 'introduction',
-                title: 'Introducción',
-                content: 'En esta lección aprenderás los saludos básicos en inglés y cómo presentarte. Es el primer paso para iniciar conversaciones en inglés.'
+                title: 'Introduction',
+                content: 'In this lesson you will learn basic greetings in English and how to introduce yourself. This is the first step to start conversations in English. Perfect for Spanish speakers who want to learn everyday English.'
             },
             {
                 type: 'vocabulary',
-                title: 'Vocabulario',
+                title: 'Vocabulary',
                 table: [
                     {
                         word: 'Hello',
@@ -1963,57 +1964,69 @@ const defaultLessons = [
                         translation: 'Estoy bien',
                         pronunciation: 'aɪ æm faɪn',
                         example: 'I am fine, thank you.'
+                    },
+                    {
+                        word: 'Nice to meet you',
+                        translation: 'Mucho gusto',
+                        pronunciation: 'naɪs tə miːt juː',
+                        example: 'Hello, I am Maria. Nice to meet you.'
+                    },
+                    {
+                        word: 'Goodbye',
+                        translation: 'Adiós',
+                        pronunciation: 'ɡʊdˈbaɪ',
+                        example: 'Goodbye, see you tomorrow.'
                     }
                 ]
             },
             {
                 type: 'exercises',
-                title: 'Ejercicios',
+                title: 'Exercises',
                 items: [
                     {
                         type: 'multiple_choice',
-                        question: '¿Cómo se dice "Hola" en inglés?',
+                        question: 'How do you say "Hola" in English?',
                         options: ['Good morning', 'Hello', 'Goodbye', 'Thank you'],
                         correctAnswer: 1,
                         completeAnswer: 'Hello',
-                        questionToSpeak: '¿Cómo se dice Hola en inglés?',
+                        questionToSpeak: 'How do you say Hola in English',
                         correctOptionText: 'Hello'
                     },
                     {
                         type: 'multiple_choice',
-                        question: 'Complete la frase: "___ afternoon, nice to meet you."',
+                        question: 'Complete the sentence: "___ afternoon, nice to meet you."',
                         options: ['Hello', 'Good', 'Morning', 'Hi'],
                         correctAnswer: 1,
                         completeAnswer: 'Good afternoon nice to meet you',
-                        questionToSpeak: 'Complete la frase Good afternoon nice to meet you',
+                        questionToSpeak: 'Complete the sentence Good afternoon nice to meet you',
                         correctOptionText: 'Good'
                     },
                     {
                         type: 'true_false',
-                        statement: '"Good morning" significa "Buenas noches" en español.',
+                        statement: '"Good morning" means "Buenas noches" in Spanish.',
                         correctAnswer: false,
-                        explanation: '"Good morning" significa "Buenos días".',
-                        completeAnswer: 'Good morning significa Buenos días',
-                        questionToSpeak: 'Good morning significa Buenas noches en español',
-                        correctOptionText: 'Falso'
+                        explanation: '"Good morning" means "Buenos días". "Good night" means "Buenas noches".',
+                        completeAnswer: 'Good morning means Buenos días not Buenas noches',
+                        questionToSpeak: 'Good morning means Buenas noches in Spanish',
+                        correctOptionText: 'False'
                     },
                     {
                         type: 'multiple_choice',
-                        question: '¿Cómo se responde a "How are you?"?',
+                        question: 'What is the correct response to "How are you?"?',
                         options: ['Good morning', 'I am fine', 'Goodbye', 'Hello'],
                         correctAnswer: 1,
                         completeAnswer: 'I am fine',
-                        questionToSpeak: '¿Cómo se responde a How are you?',
+                        questionToSpeak: 'What is the correct response to How are you',
                         correctOptionText: 'I am fine'
                     },
                     {
-                        type: 'true_false',
-                        statement: '"Good evening" se usa para saludar por la mañana.',
-                        correctAnswer: false,
-                        explanation: '"Good evening" se usa para saludar por la noche.',
-                        completeAnswer: 'Good evening se usa para saludar por la noche',
-                        questionToSpeak: 'Good evening se usa para saludar por la mañana',
-                        correctOptionText: 'Falso'
+                        type: 'multiple_choice',
+                        question: 'How do you say "Mucho gusto" in English?',
+                        options: ['Good morning', 'How are you', 'Nice to meet you', 'Goodbye'],
+                        correctAnswer: 2,
+                        completeAnswer: 'Nice to meet you',
+                        questionToSpeak: 'How do you say Mucho gusto in English',
+                        correctOptionText: 'Nice to meet you'
                     }
                 ]
             }
@@ -2021,86 +2034,122 @@ const defaultLessons = [
     },
     {
         id: 'lesson-2',
-        title: 'Vocabulario de Comida en Español',
-        language: 'Español',
-        level: 'intermedio',
-        topic: 'Comida',
-        tags: ['vocabulario', 'comida', 'restaurante'],
+        title: 'Food Vocabulary - From Spanish to English',
+        language: 'English',
+        level: 'beginner',
+        topic: 'Food',
+        tags: ['vocabulary', 'food', 'restaurant', 'shopping'],
         estimatedTime: 20,
         createdAt: new Date(Date.now() - 86400000).toISOString(),
-        author: 'Sistema',
+        author: 'System',
         sections: [
             {
                 type: 'introduction',
-                title: 'Introducción',
-                content: 'Aprende vocabulario esencial relacionado con la comida en español. Ideal para pedir en restaurantes o ir de compras.'
+                title: 'Introduction',
+                content: 'Learn essential food vocabulary in English. This lesson is perfect for Spanish speakers who want to order in restaurants, go shopping, or talk about food in English. All words include Spanish translations.'
             },
             {
                 type: 'vocabulary',
-                title: 'Vocabulario',
+                title: 'Vocabulary',
                 table: [
                     {
-                        word: 'Manzana',
-                        translation: 'Apple',
-                        pronunciation: 'manˈθana',
-                        example: 'Me gusta comer una manzana cada día.'
+                        word: 'Apple',
+                        translation: 'Manzana',
+                        pronunciation: 'ˈæp.əl',
+                        example: 'I eat an apple every day.'
                     },
                     {
-                        word: 'Pan',
-                        translation: 'Bread',
-                        pronunciation: 'pan',
-                        example: 'Compramos pan fresco cada mañana.'
+                        word: 'Bread',
+                        translation: 'Pan',
+                        pronunciation: 'bred',
+                        example: 'We buy fresh bread every morning.'
                     },
                     {
-                        word: 'Leche',
-                        translation: 'Milk',
-                        pronunciation: 'ˈletʃe',
-                        example: 'Los niños beben leche para crecer fuertes.'
+                        word: 'Milk',
+                        translation: 'Leche',
+                        pronunciation: 'mɪlk',
+                        example: 'Children drink milk to grow strong.'
                     },
                     {
-                        word: 'Queso',
-                        translation: 'Cheese',
-                        pronunciation: 'ˈkeso',
-                        example: 'Este queso está delicioso.'
+                        word: 'Cheese',
+                        translation: 'Queso',
+                        pronunciation: 'tʃiːz',
+                        example: 'This cheese is delicious.'
                     },
                     {
-                        word: 'Agua',
-                        translation: 'Water',
-                        pronunciation: 'ˈaɣwa',
-                        example: 'Es importante beber mucha agua.'
+                        word: 'Water',
+                        translation: 'Agua',
+                        pronunciation: 'ˈwɔː.tər',
+                        example: 'It is important to drink a lot of water.'
+                    },
+                    {
+                        word: 'Coffee',
+                        translation: 'Café',
+                        pronunciation: 'ˈkɒf.i',
+                        example: 'I drink coffee in the morning.'
+                    },
+                    {
+                        word: 'Tea',
+                        translation: 'Té',
+                        pronunciation: 'tiː',
+                        example: 'Would you like some tea?'
+                    },
+                    {
+                        word: 'Sugar',
+                        translation: 'Azúcar',
+                        pronunciation: 'ˈʃʊɡ.ər',
+                        example: 'I put sugar in my coffee.'
                     }
                 ]
             },
             {
                 type: 'exercises',
-                title: 'Ejercicios',
+                title: 'Exercises',
                 items: [
                     {
                         type: 'multiple_choice',
-                        question: '¿Qué significa "pan" en inglés?',
+                        question: 'What does "pan" mean in English?',
                         options: ['Bread', 'Water', 'Cheese', 'Apple'],
                         correctAnswer: 0,
                         completeAnswer: 'Bread',
-                        questionToSpeak: '¿Qué significa pan en inglés?',
+                        questionToSpeak: 'What does pan mean in English',
                         correctOptionText: 'Bread'
                     },
                     {
                         type: 'multiple_choice',
-                        question: 'Complete: "Me gusta beber ___ todos los días."',
-                        options: ['pan', 'queso', 'agua', 'manzana'],
+                        question: 'Complete the sentence: "I like to drink ___ every day."',
+                        options: ['bread', 'cheese', 'water', 'apple'],
                         correctAnswer: 2,
-                        completeAnswer: 'Me gusta beber agua todos los días',
-                        questionToSpeak: 'Complete Me gusta beber agua todos los días',
-                        correctOptionText: 'agua'
+                        completeAnswer: 'I like to drink water every day',
+                        questionToSpeak: 'Complete the sentence I like to drink water every day',
+                        correctOptionText: 'water'
                     },
                     {
                         type: 'true_false',
-                        statement: '"Leche" significa "Cheese" en inglés.',
+                        statement: '"Leche" means "Cheese" in English.',
                         correctAnswer: false,
-                        explanation: '"Leche" significa "Milk". "Cheese" es "queso".',
-                        completeAnswer: 'Leche significa Milk en inglés',
-                        questionToSpeak: 'Leche significa Cheese en inglés',
-                        correctOptionText: 'Falso'
+                        explanation: '"Leche" means "Milk" in English. "Cheese" is "queso".',
+                        completeAnswer: 'Leche means Milk not Cheese in English',
+                        questionToSpeak: 'Leche means Cheese in English',
+                        correctOptionText: 'False'
+                    },
+                    {
+                        type: 'multiple_choice',
+                        question: 'How do you say "café" in English?',
+                        options: ['Tea', 'Coffee', 'Milk', 'Sugar'],
+                        correctAnswer: 1,
+                        completeAnswer: 'Coffee',
+                        questionToSpeak: 'How do you say café in English',
+                        correctOptionText: 'Coffee'
+                    },
+                    {
+                        type: 'multiple_choice',
+                        question: 'Which word means "azúcar" in English?',
+                        options: ['Sugar', 'Salt', 'Pepper', 'Water'],
+                        correctAnswer: 0,
+                        completeAnswer: 'Sugar',
+                        questionToSpeak: 'Which word means azúcar in English',
+                        correctOptionText: 'Sugar'
                     }
                 ]
             }

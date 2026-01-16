@@ -20,13 +20,11 @@
             --card-shadow: 0 10px 20px rgba(0,0,0,0.1);
             --server-bg: #0a1128;
         }
-        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
         body {
             font-family: 'Roboto', sans-serif;
             line-height: 1.6;
@@ -34,20 +32,17 @@
             background-color: #f5f7ff;
             overflow-x: hidden;
         }
-        
         h1, h2, h3, h4, h5 {
             font-family: 'Poppins', sans-serif;
             font-weight: 600;
             margin-bottom: 1rem;
         }
-        
         .container {
             width: 100%;
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
         }
-        
         /* Header Styles */
         header {
             background-color: white;
@@ -56,20 +51,17 @@
             top: 0;
             z-index: 1000;
         }
-        
         .header-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 1rem 0;
         }
-        
         .logo {
             display: flex;
             align-items: center;
             /* gap: 10px; - Esto ahora lo maneja el enlace */
         }
-        
         .logo a {
             text-decoration: none;
             color: inherit;
@@ -77,28 +69,23 @@
             align-items: center;
             gap: 10px;
         }
-        
         .logo-icon {
             color: var(--primary);
             font-size: 1.8rem;
         }
-        
         .logo h1 {
             font-size: 1.5rem;
             margin-bottom: 0;
             color: var(--primary);
         }
-        
         .logo span {
             color: var(--accent);
         }
-        
         nav ul {
             display: flex;
             list-style: none;
             gap: 1.5rem;
         }
-        
         nav a {
             text-decoration: none;
             color: var(--dark);
@@ -106,11 +93,9 @@
             transition: color 0.3s;
             font-size: 0.95rem;
         }
-        
         nav a:hover {
             color: var(--primary);
         }
-        
         .mobile-menu-btn {
             display: none;
             background: none;
@@ -119,7 +104,6 @@
             color: var(--dark);
             cursor: pointer;
         }
-        
         /* Hero Section */
         .hero {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
@@ -128,7 +112,6 @@
             position: relative;
             overflow: hidden;
         }
-        
         .hero::before {
             content: "";
             position: absolute;
@@ -136,10 +119,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.1[...]")
             opacity: 0.3;
         }
-        
         .hero-content {
             display: flex;
             align-items: center;
@@ -147,29 +129,24 @@
             position: relative;
             z-index: 1;
         }
-        
         .hero-text {
             flex: 1;
             max-width: 600px;
         }
-        
         .hero-text h2 {
             font-size: 2.8rem;
             margin-bottom: 1.5rem;
             line-height: 1.2;
         }
-        
         .hero-text p {
             font-size: 1.1rem;
             margin-bottom: 2rem;
             opacity: 0.9;
         }
-        
         .hero-image {
             flex: 1;
             text-align: center;
         }
-        
         .server-display {
             background-color: var(--server-bg);
             border-radius: 12px;
@@ -180,7 +157,6 @@
             border: 1px solid rgba(255,255,255,0.1);
             position: relative;
         }
-        
         .server-header {
             display: flex;
             align-items: center;
@@ -190,7 +166,6 @@
             font-family: monospace;
             font-size: 0.9rem;
         }
-        
         .server-status {
             width: 10px;
             height: 10px;
@@ -198,13 +173,11 @@
             border-radius: 50%;
             animation: pulse 2s infinite;
         }
-        
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
-        
         .server-logs {
             background-color: rgba(0,0,0,0.7);
             border-radius: 8px;
@@ -216,17 +189,14 @@
             color: #ccc;
             text-align: left;
         }
-        
         .log-entry {
             margin-bottom: 8px;
             padding-left: 10px;
             border-left: 2px solid var(--primary);
         }
-        
         .log-time {
             color: #00ff9d;
         }
-        
         .btn {
             display: inline-block;
             padding: 0.8rem 1.8rem;
@@ -241,31 +211,26 @@
             text-decoration: none;
             box-shadow: 0 4px 10px rgba(114, 9, 183, 0.3);
         }
-        
         .btn:hover {
             background-color: #5a08a0;
             transform: translateY(-3px);
             box-shadow: 0 6px 15px rgba(114, 9, 183, 0.4);
         }
-        
         /* Features Section */
         .features {
             padding: 5rem 0;
             background-color: white;
         }
-        
         .section-title {
             text-align: center;
             margin-bottom: 3rem;
         }
-        
         .section-title h2 {
             font-size: 2.2rem;
             color: var(--primary);
             position: relative;
             display: inline-block;
         }
-        
         .section-title h2::after {
             content: "";
             position: absolute;
@@ -277,14 +242,12 @@
             transform: translateX(-50%);
             border-radius: 2px;
         }
-        
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
             margin-top: 3rem;
         }
-        
         .feature-card {
             background-color: white;
             border-radius: 12px;
@@ -294,12 +257,10 @@
             border-top: 4px solid var(--primary);
             text-align: center;
         }
-        
         .feature-card:hover {
             transform: translateY(-10px);
             box-shadow: 0 15px 30px rgba(0,0,0,0.15);
         }
-        
         .feature-icon {
             font-size: 2.5rem;
             color: var(--primary);
@@ -313,17 +274,14 @@
             border-radius: 50%;
             margin: 0 auto 1.5rem;
         }
-        
         .feature-card h3 {
             font-size: 1.4rem;
             margin-bottom: 1rem;
         }
-        
         .feature-card p {
             color: var(--gray);
             margin-bottom: 1.5rem;
         }
-        
         .feature-link {
             color: var(--primary);
             text-decoration: none;
@@ -333,21 +291,17 @@
             gap: 5px;
             transition: gap 0.3s;
         }
-        
         .feature-link:hover {
             gap: 10px;
         }
-        
         /* Cards Section */
         .cards-section {
             padding: 5rem 0;
             background-color: var(--light);
         }
-        
         .cards-section .section-title h2 {
             color: var(--secondary);
         }
-        
         .card-name {
             text-align: center;
             font-size: 1.8rem;
@@ -355,13 +309,11 @@
             margin-bottom: 1rem;
             font-weight: 700;
         }
-        
         .card-name span {
             background-color: rgba(114, 9, 183, 0.1);
             padding: 0.3rem 1rem;
             border-radius: 30px;
         }
-        
         .card-desc {
             text-align: center;
             max-width: 700px;
@@ -369,13 +321,11 @@
             color: var(--gray);
             font-size: 1.1rem;
         }
-        
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
         }
-        
         .card-example {
             background-color: white;
             border-radius: 12px;
@@ -383,7 +333,6 @@
             box-shadow: var(--card-shadow);
             border: 1px solid var(--light-gray);
         }
-        
         .card-header {
             display: flex;
             justify-content: space-between;
@@ -392,12 +341,10 @@
             padding-bottom: 1rem;
             border-bottom: 1px solid var(--light-gray);
         }
-        
         .card-title {
             font-size: 1.3rem;
             color: var(--primary);
         }
-        
         .card-badge {
             background-color: var(--accent);
             color: white;
@@ -406,25 +353,20 @@
             font-size: 0.8rem;
             font-weight: 500;
         }
-        
         .card-content {
             margin-bottom: 1.5rem;
         }
-        
         .card-example h4 {
             color: var(--secondary);
             margin-bottom: 0.8rem;
         }
-        
         .card-example ul {
             padding-left: 1.2rem;
             margin-bottom: 1.5rem;
         }
-        
         .card-example li {
             margin-bottom: 0.5rem;
         }
-        
         .card-footer {
             display: flex;
             justify-content: space-between;
@@ -434,20 +376,17 @@
             font-size: 0.9rem;
             color: var(--gray);
         }
-        
         /* References Section */
         .references {
             padding: 5rem 0;
             background-color: white;
         }
-        
         .references-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
             margin-top: 3rem;
         }
-        
         .reference-item {
             display: flex;
             flex-direction: column;
@@ -457,28 +396,23 @@
             border-radius: 10px;
             transition: transform 0.3s ease;
         }
-        
         .reference-item:hover {
             transform: translateY(-5px);
         }
-        
         .ref-logo {
             font-size: 2rem;
             color: var(--primary);
             margin-bottom: 1rem;
         }
-        
         .reference-item h4 {
             font-size: 1.1rem;
             text-align: center;
         }
-        
         /* Tool Section */
         .tool-section {
             padding: 5rem 0;
             background-color: var(--light);
         }
-        
         .tool-card {
             background-color: white;
             border-radius: 12px;
@@ -489,19 +423,16 @@
             text-align: center;
             border-left: 5px solid var(--warning);
         }
-        
         .tool-card h3 {
             color: var(--warning);
             font-size: 1.8rem;
             margin-bottom: 1rem;
         }
-        
         .tool-card p {
             color: var(--gray);
             margin-bottom: 2rem;
             font-size: 1.1rem;
         }
-        
         .qr-preview {
             background-color: white;
             border: 2px dashed var(--light-gray);
@@ -510,7 +441,6 @@
             width: 200px;
             margin: 0 auto 2rem;
         }
-        
         .qr-code {
             width: 150px;
             height: 150px;
@@ -523,70 +453,57 @@
             color: var(--gray);
             border-radius: 8px;
         }
-        
         /* Footer */
         footer {
             background-color: var(--dark);
             color: white;
             padding: 4rem 0 2rem;
         }
-        
         .footer-content {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 3rem;
             margin-bottom: 3rem;
         }
-        
         .footer-section h3 {
             font-size: 1.3rem;
             margin-bottom: 1.5rem;
             color: white;
         }
-        
         .footer-section p {
             opacity: 0.8;
             margin-bottom: 1.5rem;
         }
-        
         .creator-info {
             margin-top: 1.5rem;
         }
-        
         .creator-info h4 {
             font-size: 1.1rem;
             margin-bottom: 0.5rem;
         }
-        
         .creator-info p {
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
         .creator-info i {
             color: var(--success);
         }
-        
         .footer-links ul {
             list-style: none;
         }
-        
         .footer-links li {
             margin-bottom: 0.8rem;
         }
-        
         .footer-links a {
             color: rgba(255,255,255,0.8);
             text-decoration: none;
             transition: color 0.3s;
         }
-        
         .footer-links a:hover {
             color: var(--success);
         }
-        
         .copyright {
             text-align: center;
             padding-top: 2rem;
@@ -594,59 +511,47 @@
             opacity: 0.7;
             font-size: 0.9rem;
         }
-        
         /* Responsive Styles */
         @media (max-width: 992px) {
             .hero-content {
                 flex-direction: column;
                 text-align: center;
             }
-            
             .hero-text {
                 margin-bottom: 3rem;
             }
-            
             .hero-text h2 {
                 font-size: 2.3rem;
             }
         }
-        
         @media (max-width: 768px) {
             nav ul {
                 display: none;
             }
-            
             .mobile-menu-btn {
                 display: block;
             }
-            
             .hero-text h2 {
                 font-size: 2rem;
             }
-            
             .server-display {
                 width: 100%;
                 max-width: 320px;
             }
-            
             .feature-card, .card-example, .tool-card {
                 padding: 1.5rem;
             }
         }
-        
         @media (max-width: 480px) {
             .hero {
                 padding: 3rem 0;
             }
-            
             .hero-text h2 {
                 font-size: 1.8rem;
             }
-            
             .section-title h2 {
                 font-size: 1.8rem;
             }
-            
             .features, .cards-section, .references, .tool-section {
                 padding: 3rem 0;
             }
@@ -661,11 +566,9 @@
                 <i class="fas fa-language logo-icon"></i>
                 <h1>open<span>Lingo</span></h1>
             </div>
-            
             <button class="mobile-menu-btn" id="mobileMenuBtn">
                 <i class="fas fa-bars"></i>
             </button>
-            
             <nav>
                 <ul id="navMenu">
                     <li><a href="#features">Características</a></li>
@@ -676,13 +579,12 @@
             </nav>
         </div>
     </header>
-
     <!-- Hero Section -->
     <section class="hero">
         <div class="container hero-content">
             <div class="hero-text">
                 <h2>Aprende idiomas con IA y contenido didáctico inteligente</h2>
-                <p>OpenLingo es una plataforma educativa que utiliza inteligencia artificial para crear lecciones personalizadas, tutorías conversacionales y evaluaciones adaptativas. Actualmente disponible en servidor local, preparada para despliegue en VPS.</p>
+                <p>OpenLingo es una plataforma educativa que utiliza inteligencia artificial para crear lecciones personalizadas, tutorías conversacionales y evaluaciones adaptativas. Actualment[...] 
                 <a href="#features" class="btn">Explorar Plataforma</a>
             </div>
             <div class="hero-image">
@@ -698,7 +600,6 @@
             </div>
         </div>
     </section>
-
     <!-- Features Section -->
     <section class="features" id="features">
         <div class="container">
@@ -715,7 +616,6 @@
                     <p>Lecciones personalizadas generadas por IA según tu nivel, objetivos y progreso. Contenido didáctico adaptativo para un aprendizaje eficiente.</p>
                     <a href="lessons.html" class="feature-link">Acceder a lecciones <i class="fas fa-arrow-right"></i></a>
                 </div>
-                
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-headset"></i>
@@ -724,7 +624,6 @@
                     <p>Practica conversación con un tutor de IA que corrige pronunciación, sugiere expresiones y simula situaciones reales de comunicación.</p>
                     <a href="chat.html" class="feature-link">Hablar con tutor <i class="fas fa-arrow-right"></i></a>
                 </div>
-                
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-sticky-note"></i>
@@ -744,16 +643,14 @@
             </div>
         </div>
     </section>
-
     <!-- Cards Section -->
     <section class="cards-section" id="cards">
         <div class="container">
             <div class="section-title">
                 <h2>Sistema de Aprendizaje</h2>
                 <p class="card-name"><span>openCards</span></p>
-                <p class="card-desc">Nuestro sistema de tarjetas educativas inteligentes genera contenido didáctico personalizado para cada estudiante, aplicable a múltiples temas académicos además de idiomas.</p>
+                <p class="card-desc">Nuestro sistema de tarjetas educativas inteligentes genera contenido didáctico personalizado para cada estudiante, aplicable a múltiples temas académicos a[...] 
             </div>
-            
             <div class="cards-grid">
                 <div class="card-example">
                     <div class="card-header">
@@ -774,7 +671,6 @@
                         <span>Dificultad: Media</span>
                     </div>
                 </div>
-                
                 <div class="card-example">
                     <div class="card-header">
                         <h3 class="card-title">Gramática en Contexto</h3>
@@ -794,7 +690,6 @@
                         <span>Dificultad: Alta</span>
                     </div>
                 </div>
-                
                 <div class="card-example">
                     <div class="card-header">
                         <h3 class="card-title">Pronunciación</h3>
@@ -817,7 +712,6 @@
             </div>
         </div>
     </section>
-
     <!-- References Section -->
     <section class="references" id="references">
         <div class="container">
@@ -825,7 +719,6 @@
                 <h2>Referencias Académicas</h2>
                 <p>Recursos de gran valor para el aprendizaje de idiomas</p>
             </div>
-            
             <div class="references-grid">
                 <div class="reference-item">
                     <div class="ref-logo">
@@ -834,7 +727,6 @@
                     <h4>Cambridge Dictionary</h4>
                     <p>Diccionario de referencia con pronunciación, ejemplos y definiciones precisas.</p>
                 </div>
-                
                 <div class="reference-item">
                     <div class="ref-logo">
                         <i class="fas fa-exchange-alt"></i>
@@ -842,7 +734,6 @@
                     <h4>Word Reference</h4>
                     <p>Diccionario bilingüe con foros de discusión sobre traducciones y usos.</p>
                 </div>
-                
                 <div class="reference-item">
                     <div class="ref-logo">
                         <i class="fab fa-reddit"></i>
@@ -850,7 +741,6 @@
                     <h4>Reddit Language Forums</h4>
                     <p>Comunidades activas para práctica y discusión de idiomas con nativos.</p>
                 </div>
-                
                 <div class="reference-item">
                     <div class="ref-logo">
                         <i class="fas fa-language"></i>
@@ -858,7 +748,6 @@
                     <h4>Forvo</h4>
                     <p>Base de datos de pronunciaciones en múltiples idiomas por hablantes nativos.</p>
                 </div>
-                
                 <div class="reference-item">
                     <div class="ref-logo">
                         <i class="fas fa-graduation-cap"></i>
@@ -866,7 +755,6 @@
                     <h4>Linguee</h4>
                     <p>Diccionario contextual con ejemplos extraídos de textos reales.</p>
                 </div>
-                
                 <div class="reference-item">
                     <div class="ref-logo">
                         <i class="fas fa-comments"></i>
@@ -877,15 +765,13 @@
             </div>
         </div>
     </section>
-
     <!-- Footer -->
     <footer id="contact">
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>OpenLingo</h3>
-                    <p>Plataforma educativa para aprendizaje de idiomas mediante inteligencia artificial. Servidor local preparado para despliegue en VPS con múltiples actividades interactivas.</p>
-                    
+                    <p>Plataforma educativa para aprendizaje de idiomas mediante inteligencia artificial. Servidor local preparado para despliegue en VPS con múltiples actividades interactivas.[...] 
                     <div class="creator-info">
                         <h4>Creador</h4>
                         <div class="contact-info">
@@ -902,11 +788,16 @@
                                     gm.nelson95@gmail.com
                                 </a>
                             </p>
+                            <p>
+                                <i class="fab fa-github"></i> GitHub: 
+                                <a href="https://github.com/gm-nelson" target="_blank" rel="noopener noreferrer" style="color: #333; text-decoration: none;">
+                                    @gm-nelson
+                                </a>
+                            </p>
                             <p><i class="fas fa-server"></i> Servidor: Local / VPS compatible</p>
                         </div>
                     </div>
                 </div>
-                
                 <div class="footer-section">
                     <h3>Características CORE</h3>
                     <div class="footer-links">
@@ -918,7 +809,6 @@
                         </ul>
                     </div>
                 </div>
-                
                 <div class="footer-section">
                     <h3>Herramientas y Referencias</h3>
                     <div class="footer-links">
@@ -931,21 +821,18 @@
                     </div>
                 </div>
             </div>
-            
             <div class="copyright">
                 <p>&copy; 2023 OpenLingo - Plataforma Educativa con IA. Todos los derechos reservados.</p>
                 <p>Desarrollado para servidor local con capacidad de despliegue en VPS.</p>
             </div>
         </div>
     </footer>
-
     <script>
         // Mobile menu toggle
         document.getElementById('mobileMenuBtn').addEventListener('click', function() {
             const navMenu = document.getElementById('navMenu');
             navMenu.style.display = navMenu.style.display === 'flex' ? 'none' : 'flex';
         });
-
         // Server logs simulation
         const serverLogs = document.getElementById('serverLogs');
         const logs = [
@@ -959,7 +846,6 @@
             { time: "10:24:35", message: "Creando set de LingoCards: Verbos irregulares" },
             { time: "10:25:00", message: "Preparando evaluación adaptativa..." }
         ];
-
         // Function to add logs with delay
         function addLogs() {
             let delay = 0;
@@ -974,7 +860,6 @@
                 }, delay);
                 delay += 800;
             });
-
             // Add periodic status updates after initial logs
             setTimeout(() => {
                 setInterval(() => {
@@ -987,46 +872,19 @@
                     ];
                     const randomMessage = statusMessages[Math.floor(Math.random() * statusMessages.length)];
                     const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                    
                     const logEntry = document.createElement('div');
                     logEntry.className = 'log-entry';
                     logEntry.innerHTML = `<span class="log-time">[${time}]</span> ${randomMessage}`;
                     serverLogs.appendChild(logEntry);
-                    
                     // Keep only last 10 logs
                     if (serverLogs.children.length > 10) {
                         serverLogs.removeChild(serverLogs.children[0]);
                     }
-                    
-                    serverLogs.scrollTop = serverLogs.scrollHeight;
-                }, 5000);
-            }, delay);
+                }, 4500);
+            }, 9000);
         }
-
-        // Start adding logs when page loads
+        // Initialize logs on load
         window.addEventListener('load', addLogs);
-
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
-                if (targetId === '#') return;
-                
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    window.scrollTo({
-                        top: targetElement.offsetTop - 80,
-                        behavior: 'smooth'
-                    });
-                    
-                    // Close mobile menu if open
-                    if (window.innerWidth <= 768) {
-                        document.getElementById('navMenu').style.display = 'none';
-                    }
-                }
-            });
-        });
     </script>
 </body>
-</html>
+</html>\n

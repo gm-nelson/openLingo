@@ -274,8 +274,8 @@
         
         .image-preview {
             width: 100%;
-            max-width: 600px;
-            height: 100%;
+            max-width: 300px;
+            height: 200px;
             border: 2px dashed #ddd;
             border-radius: 10px;
             margin: 15px auto;
@@ -609,6 +609,7 @@
         .loading-suggestions i {
             font-size: 2rem;
             margin-bottom: 10px;
+            color: #ccc;
         }
         
         .server-buttons {
@@ -737,6 +738,179 @@
             flex: 1;
         }
         
+        /* NUEVO: Botón flotante para ajustes de TTS */
+        .tts-floating-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            border: 3px solid white;
+        }
+        
+        .tts-floating-button:hover {
+            background-color: #3d8b40;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .tts-floating-button.active {
+            background-color: #e74c3c;
+        }
+        
+        .tts-floating-button.active:hover {
+            background-color: #c0392b;
+        }
+        
+        /* NUEVO: Panel flotante de configuración TTS */
+        .tts-floating-panel {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            padding: 20px;
+            display: none;
+            border: 2px solid #4CAF50;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .tts-floating-panel h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tts-floating-panel h3 i {
+            color: #4CAF50;
+        }
+        
+        .tts-floating-panel .close-btn {
+            background: none;
+            border: none;
+            color: #7f8c8d;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .tts-floating-panel .close-btn:hover {
+            background-color: #f0f0f0;
+            color: #e74c3c;
+        }
+        
+        .tts-floating-controls {
+            margin-top: 15px;
+        }
+        
+        .tts-floating-controls .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .tts-floating-controls label {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            display: block;
+            font-weight: 600;
+        }
+        
+        .tts-floating-controls select,
+        .tts-floating-controls input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .tts-floating-controls .slider-value {
+            display: inline-block;
+            margin-left: 10px;
+            font-weight: bold;
+            color: #4CAF50;
+            min-width: 30px;
+        }
+        
+        .tts-floating-controls .test-area {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .tts-floating-controls .test-area input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .tts-floating-controls .test-area button {
+            width: 100%;
+            padding: 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        .tts-floating-controls .test-area button:hover {
+            background-color: #2980b9;
+        }
+        
+        .tts-current-voice {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4CAF50;
+            font-size: 0.9rem;
+        }
+        
+        .tts-current-voice strong {
+            color: #2c3e50;
+        }
+        
+        /* Responsive para panel flotante */
         @media (max-width: 768px) {
             .step-indicator {
                 flex-wrap: wrap;
@@ -795,6 +969,19 @@
             .form-row {
                 width: 100%;
             }
+            
+            .tts-floating-panel {
+                width: 300px;
+                right: 20px;
+                bottom: 90px;
+            }
+            
+            .tts-floating-button {
+                bottom: 20px;
+                right: 20px;
+                width: 55px;
+                height: 55px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -832,6 +1019,21 @@
             
             .set-actions {
                 flex-direction: column;
+            }
+            
+            .tts-floating-panel {
+                width: calc(100vw - 40px);
+                right: 20px;
+                left: 20px;
+                bottom: 90px;
+            }
+            
+            .tts-floating-button {
+                bottom: 15px;
+                right: 15px;
+                width: 50px;
+                height: 50px;
+                font-size: 1.3rem;
             }
         }
     </style>
@@ -1137,6 +1339,77 @@
         </div>
     </div>
     
+    <!-- Botón flotante para ajustes TTS -->
+    <div class="tts-floating-button" id="ttsFloatingButton">
+        <i class="fas fa-volume-up"></i>
+    </div>
+    
+    <!-- Panel flotante de configuración TTS -->
+    <div class="tts-floating-panel" id="ttsFloatingPanel">
+        <h3>
+            <span><i class="fas fa-sliders-h"></i> Ajustes de Narración</span>
+            <button class="close-btn" id="closeTTSPanel">
+                <i class="fas fa-times"></i>
+            </button>
+        </h3>
+        
+        <div class="tts-current-voice" id="currentVoiceInfo">
+            <strong>Voz actual:</strong> <span id="currentVoiceName">US English Female</span><br>
+            <strong>Idioma:</strong> <span id="currentVoiceLanguage">Inglés (EE.UU.)</span>
+        </div>
+        
+        <div class="tts-floating-controls">
+            <div class="form-group">
+                <label for="floatingTTSVoice">Voz / Acento:</label>
+                <select id="floatingTTSVoice">
+                    <option value="US English Female">Inglés EE.UU. (Femenino)</option>
+                    <option value="US English Male">Inglés EE.UU. (Masculino)</option>
+                    <option value="UK English Female">Inglés Reino Unido (Femenino)</option>
+                    <option value="UK English Male">Inglés Reino Unido (Masculino)</option>
+                    <option value="Australian Female">Inglés Australiano (Femenino)</option>
+                    <option value="Spanish Female">Español (Femenino)</option>
+                    <option value="Spanish Male">Español (Masculino)</option>
+                    <option value="French Female">Francés (Femenino)</option>
+                    <option value="German Female">Alemán (Femenino)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="floatingTTSRate">
+                    Velocidad: <span class="slider-value" id="floatingTTSRateValue">1.0</span>
+                </label>
+                <input type="range" id="floatingTTSRate" min="0.5" max="2" step="0.1" value="1">
+            </div>
+            
+            <div class="form-group">
+                <label for="floatingTTSPitch">
+                    Tono: <span class="slider-value" id="floatingTTSPitchValue">1.0</span>
+                </label>
+                <input type="range" id="floatingTTSPitch" min="0.5" max="2" step="0.1" value="1">
+            </div>
+            
+            <div class="form-group">
+                <label for="floatingTTSVolume">
+                    Volumen: <span class="slider-value" id="floatingTTSVolumeValue">1.0</span>
+                </label>
+                <input type="range" id="floatingTTSVolume" min="0" max="1" step="0.1" value="1">
+            </div>
+            
+            <div class="test-area">
+                <input type="text" id="floatingTTSTest" placeholder="Texto para probar la voz" value="Hello">
+                <button id="floatingTestTTSBtn">
+                    <i class="fas fa-play"></i> Probar configuración
+                </button>
+            </div>
+            
+            <div style="margin-top: 15px; text-align: center;">
+                <button class="btn btn-small" id="applyTTSChanges" style="width: 100%;">
+                    <i class="fas fa-check"></i> Aplicar cambios
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
     // Variables globales
     let currentStep = 1;
@@ -1154,6 +1427,9 @@
     };
     let voices = [];
     let speechSynthesis = window.speechSynthesis;
+    
+    // NUEVAS VARIABLES para el panel flotante
+    let ttsPanelVisible = false;
     
     // Constantes para almacenamiento local
     const STORAGE_KEY = 'languageFlashcardsSets';
@@ -1315,6 +1591,18 @@
             }
         });
         
+        // NUEVO: Configurar event listeners para el panel flotante TTS
+        document.getElementById('ttsFloatingButton').addEventListener('click', toggleTTSFloatingPanel);
+        document.getElementById('closeTTSPanel').addEventListener('click', toggleTTSFloatingPanel);
+        document.getElementById('applyTTSChanges').addEventListener('click', applyTTSChanges);
+        document.getElementById('floatingTestTTSBtn').addEventListener('click', testFloatingTTS);
+        
+        // Event listeners para los controles del panel flotante
+        document.getElementById('floatingTTSVoice').addEventListener('change', updateFloatingTTSSettings);
+        document.getElementById('floatingTTSRate').addEventListener('input', updateFloatingTTSSettings);
+        document.getElementById('floatingTTSPitch').addEventListener('input', updateFloatingTTSSettings);
+        document.getElementById('floatingTTSVolume').addEventListener('input', updateFloatingTTSSettings);
+        
         // Configurar delegación de eventos para sugerencias de imágenes
         document.getElementById('imageSelectionContainer').addEventListener('click', function(e) {
             // Manejar clic en botón de sugerencias
@@ -1358,12 +1646,24 @@
                 '<br><small style="color: #e74c3c;">TTS no está disponible en tu navegador</small>';
         }
         
+        // Inicializar controles del panel flotante
+        initializeFloatingPanelControls();
+        
+        // Ocultar panel flotante inicialmente
+        document.getElementById('ttsFloatingPanel').style.display = 'none';
+        
+        // Mostrar/ocultar botón flotante según el paso actual
+        updateFloatingButtonVisibility();
+        
         // Inicializar almacenamiento local con sets de prueba
         initializeStorage();
         
         // Inicializar con el paso 1
         updateStepIndicator(1);
         toggleTTS(); // Aplicar estado inicial de TTS
+        
+        // Inicializar tooltip para el botón flotante
+        document.getElementById('ttsFloatingButton').title = 'Ajustes de narración';
     });
     
     // ========== FUNCIONES PARA GESTIÓN DE SETS ==========
@@ -1707,6 +2007,9 @@ ${JSON.stringify(set, null, 2)}
         updateStepIndicator(step);
         
         currentStep = step;
+        
+        // Actualizar visibilidad del botón flotante
+        updateFloatingButtonVisibility();
     }
     
     // Actualizar el indicador de pasos
@@ -2625,6 +2928,7 @@ INSTRUCCIONES:
         // Actualizar opciones de voz si hay voces disponibles
         if (voices.length > 0) {
             updateVoiceOptionsForLanguage();
+            updateFloatingVoiceOptions();
         }
     }
     
@@ -2714,13 +3018,18 @@ INSTRUCCIONES:
     function toggleTTS() {
         ttsEnabled = document.getElementById('ttsEnabled').checked;
         const ttsSettingsDiv = document.getElementById('ttsSettings');
+        const floatingButton = document.getElementById('ttsFloatingButton');
         
         if (ttsEnabled) {
             ttsSettingsDiv.style.opacity = '1';
             ttsSettingsDiv.style.pointerEvents = 'all';
+            floatingButton.style.opacity = '1';
+            floatingButton.style.pointerEvents = 'all';
         } else {
             ttsSettingsDiv.style.opacity = '0.6';
             ttsSettingsDiv.style.pointerEvents = 'none';
+            floatingButton.style.opacity = '0.5';
+            floatingButton.style.pointerEvents = 'none';
         }
     }
     
@@ -2858,7 +3167,270 @@ INSTRUCCIONES:
             speakText(card.target);
         }
     }
-    // ========== FIN FUNCIONES TTS ==========
+    
+    // ========== NUEVAS FUNCIONES PARA EL PANEL FLOTANTE TTS ==========
+    
+    // Inicializar controles del panel flotante
+    function initializeFloatingPanelControls() {
+        // Cargar voces en el selector flotante
+        if (speechSynthesis && voices.length > 0) {
+            updateFloatingVoiceOptions();
+        }
+        
+        // Sincronizar valores iniciales
+        document.getElementById('floatingTTSVoice').value = ttsSettings.voice;
+        document.getElementById('floatingTTSRate').value = ttsSettings.rate;
+        document.getElementById('floatingTTSPitch').value = ttsSettings.pitch;
+        document.getElementById('floatingTTSVolume').value = ttsSettings.volume;
+        
+        // Actualizar valores mostrados
+        updateFloatingTTSSettings();
+    }
+    
+    // Actualizar opciones de voz en el panel flotante
+    function updateFloatingVoiceOptions() {
+        const voiceSelect = document.getElementById('floatingTTSVoice');
+        const targetLanguage = document.getElementById('targetLanguage').value;
+        const availableVoices = getVoicesByLanguage(targetLanguage);
+        
+        // Guardar selección actual
+        const currentSelection = voiceSelect.value;
+        
+        // Limpiar opciones
+        voiceSelect.innerHTML = '';
+        
+        if (availableVoices.length > 0) {
+            // Agregar voces del idioma objetivo primero
+            availableVoices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.value = voice.name;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                if (index === 0) option.selected = true;
+                voiceSelect.appendChild(option);
+            });
+            
+            // Separador
+            const separator = document.createElement('option');
+            separator.disabled = true;
+            separator.textContent = '────────── Otras voces ──────────';
+            voiceSelect.appendChild(separator);
+            
+            // Agregar otras voces disponibles
+            voices.forEach(voice => {
+                if (!availableVoices.includes(voice)) {
+                    const option = document.createElement('option');
+                    option.value = voice.name;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    voiceSelect.appendChild(option);
+                }
+            });
+            
+            // Restaurar selección si existe
+            if (currentSelection && Array.from(voiceSelect.options).some(opt => opt.value === currentSelection)) {
+                voiceSelect.value = currentSelection;
+            }
+        } else {
+            // Si no hay voces para el idioma, mostrar todas
+            voices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.value = voice.name;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                if (index === 0) option.selected = true;
+                voiceSelect.appendChild(option);
+            });
+        }
+    }
+    
+    // Actualizar controles del panel flotante con valores actuales
+    function updateFloatingPanelControls() {
+        // Sincronizar con configuración actual
+        document.getElementById('floatingTTSVoice').value = ttsSettings.voice;
+        document.getElementById('floatingTTSRate').value = ttsSettings.rate;
+        document.getElementById('floatingTTSPitch').value = ttsSettings.pitch;
+        document.getElementById('floatingTTSVolume').value = ttsSettings.volume;
+        
+        // Actualizar valores mostrados
+        document.getElementById('floatingTTSRateValue').textContent = ttsSettings.rate.toFixed(1);
+        document.getElementById('floatingTTSPitchValue').textContent = ttsSettings.pitch.toFixed(1);
+        document.getElementById('floatingTTSVolumeValue').textContent = ttsSettings.volume.toFixed(1);
+        
+        // Actualizar información de voz actual
+        updateCurrentVoiceInfo();
+    }
+    
+    // Actualizar configuración del panel flotante
+    function updateFloatingTTSSettings() {
+        // Actualizar valores mostrados
+        document.getElementById('floatingTTSRateValue').textContent = 
+            document.getElementById('floatingTTSRate').value;
+        document.getElementById('floatingTTSPitchValue').textContent = 
+            document.getElementById('floatingTTSPitch').value;
+        document.getElementById('floatingTTSVolumeValue').textContent = 
+            document.getElementById('floatingTTSVolume').value;
+        
+        // Actualizar información de voz
+        updateCurrentVoiceInfo();
+    }
+    
+    // Actualizar información de voz actual
+    function updateCurrentVoiceInfo() {
+        const voiceSelect = document.getElementById('floatingTTSVoice');
+        const selectedVoice = voiceSelect.options[voiceSelect.selectedIndex];
+        const voiceName = selectedVoice.textContent;
+        
+        // Extraer idioma del nombre de la voz
+        let language = "Desconocido";
+        if (voiceName.includes('Inglés')) language = "Inglés";
+        else if (voiceName.includes('Español')) language = "Español";
+        else if (voiceName.includes('Francés')) language = "Francés";
+        else if (voiceName.includes('Alemán')) language = "Alemán";
+        else if (voiceName.includes('Italiano')) language = "Italiano";
+        else if (voiceName.includes('Portugués')) language = "Portugués";
+        else if (voiceName.includes('Chino')) language = "Chino";
+        else if (voiceName.includes('Japonés')) language = "Japonés";
+        
+        document.getElementById('currentVoiceName').textContent = voiceName.split(' (')[0];
+        document.getElementById('currentVoiceLanguage').textContent = language;
+    }
+    
+    // Función para mostrar/ocultar el panel flotante
+    function toggleTTSFloatingPanel() {
+        const panel = document.getElementById('ttsFloatingPanel');
+        const button = document.getElementById('ttsFloatingButton');
+        
+        if (ttsPanelVisible) {
+            panel.style.display = 'none';
+            button.classList.remove('active');
+        } else {
+            panel.style.display = 'block';
+            button.classList.add('active');
+            
+            // Actualizar controles con valores actuales
+            updateFloatingPanelControls();
+            updateCurrentVoiceInfo();
+        }
+        
+        ttsPanelVisible = !ttsPanelVisible;
+    }
+    
+    // Aplicar cambios de configuración TTS
+    function applyTTSChanges() {
+        // Actualizar configuración global
+        ttsSettings.voice = document.getElementById('floatingTTSVoice').value;
+        ttsSettings.rate = parseFloat(document.getElementById('floatingTTSRate').value);
+        ttsSettings.pitch = parseFloat(document.getElementById('floatingTTSPitch').value);
+        ttsSettings.volume = parseFloat(document.getElementById('floatingTTSVolume').value);
+        
+        // Actualizar controles principales si están visibles
+        if (document.getElementById('ttsSettings').style.opacity !== '0.6') {
+            document.getElementById('ttsVoice').value = ttsSettings.voice;
+            document.getElementById('ttsRate').value = ttsSettings.rate;
+            document.getElementById('ttsPitch').value = ttsSettings.pitch;
+            document.getElementById('ttsVolume').value = ttsSettings.volume;
+            
+            document.getElementById('ttsRateValue').textContent = ttsSettings.rate.toFixed(1);
+            document.getElementById('ttsPitchValue').textContent = ttsSettings.pitch.toFixed(1);
+            document.getElementById('ttsVolumeValue').textContent = ttsSettings.volume.toFixed(1);
+        }
+        
+        // Mostrar mensaje de confirmación
+        showFloatingMessage('Configuración de voz aplicada', 'success');
+        
+        // Cerrar panel después de un breve delay
+        setTimeout(() => {
+            toggleTTSFloatingPanel();
+        }, 1000);
+    }
+    
+    // Probar TTS desde el panel flotante
+    function testFloatingTTS() {
+        if (!ttsEnabled || !speechSynthesis) {
+            showFloatingMessage('TTS no está habilitado', 'error');
+            return;
+        }
+        
+        const testText = document.getElementById('floatingTTSTest').value || "Hello";
+        
+        // Crear utterance temporal con configuración del panel
+        const utterance = new SpeechSynthesisUtterance(testText);
+        
+        utterance.rate = parseFloat(document.getElementById('floatingTTSRate').value);
+        utterance.pitch = parseFloat(document.getElementById('floatingTTSPitch').value);
+        utterance.volume = parseFloat(document.getElementById('floatingTTSVolume').value);
+        
+        // Buscar la voz seleccionada
+        const selectedVoiceName = document.getElementById('floatingTTSVoice').value;
+        const selectedVoice = voices.find(voice => voice.name === selectedVoiceName);
+        
+        if (selectedVoice) {
+            utterance.voice = selectedVoice;
+            utterance.lang = selectedVoice.lang;
+        }
+        
+        // Cancelar cualquier narración en curso
+        speechSynthesis.cancel();
+        
+        // Reproducir
+        speechSynthesis.speak(utterance);
+        
+        showFloatingMessage('Probando voz...', 'info');
+    }
+    
+    // Mostrar mensaje en el panel flotante
+    function showFloatingMessage(text, type) {
+        // Crear elemento de mensaje
+        const messageDiv = document.createElement('div');
+        messageDiv.textContent = text;
+        messageDiv.style.cssText = `
+            position: fixed;
+            bottom: 160px;
+            right: 30px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1001;
+            animation: fadeInOut 3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        `;
+        
+        if (type === 'success') {
+            messageDiv.style.backgroundColor = '#4CAF50';
+        } else if (type === 'error') {
+            messageDiv.style.backgroundColor = '#e74c3c';
+        } else {
+            messageDiv.style.backgroundColor = '#3498db';
+        }
+        
+        // Agregar al documento
+        document.body.appendChild(messageDiv);
+        
+        // Remover después de 3 segundos
+        setTimeout(() => {
+            if (messageDiv.parentNode) {
+                messageDiv.parentNode.removeChild(messageDiv);
+            }
+        }, 3000);
+    }
+    
+    // Actualizar visibilidad del botón flotante según el paso
+    function updateFloatingButtonVisibility() {
+        const floatingButton = document.getElementById('ttsFloatingButton');
+        const currentStep = document.querySelector('.step.active .step-circle').textContent;
+        
+        // Mostrar solo en pasos 4 y 5 (flashcards y sets)
+        if (currentStep === '4' || currentStep === '5') {
+            floatingButton.style.display = 'flex';
+        } else {
+            floatingButton.style.display = 'none';
+            // Cerrar panel si está abierto
+            if (ttsPanelVisible) {
+                toggleTTSFloatingPanel();
+            }
+        }
+    }
+    
+    // ========== FIN NUEVAS FUNCIONES ==========
     
     // Hacer las funciones disponibles globalmente para los event handlers en HTML
     window.loadSetAndView = loadSetAndView;
@@ -2866,6 +3438,9 @@ INSTRUCCIONES:
     window.deleteSetAndRefresh = deleteSetAndRefresh;
     window.loadImageSuggestions = loadImageSuggestions;
     window.handleImageError = handleImageError;
+    window.toggleTTSFloatingPanel = toggleTTSFloatingPanel;
+    window.testFloatingTTS = testFloatingTTS;
+    window.applyTTSChanges = applyTTSChanges;
 </script>
 </body>
 </html>

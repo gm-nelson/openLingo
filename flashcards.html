@@ -419,12 +419,18 @@
             border-radius: 10px;
             overflow: hidden;
             border: 3px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.1);
         }
         
         .image-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
         }
         
         .flashcard-nav {
@@ -571,7 +577,7 @@
         .suggestion-img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
         }
         
         .suggestion-server {
@@ -1287,6 +1293,27 @@
         document.getElementById('ttsPitch').addEventListener('input', updateTTSSettings);
         document.getElementById('ttsVolume').addEventListener('input', updateTTSSettings);
         document.getElementById('testTTSBtn').addEventListener('click', testTTS);
+        
+        // Event listener para cambio de idioma objetivo
+        document.getElementById('targetLanguage').addEventListener('change', function() {
+            if (speechSynthesis && voices.length > 0) {
+                updateVoiceOptionsForLanguage(this.value);
+                
+                // Actualizar el texto de prueba según el idioma
+                const testExamples = {
+                    'inglés': 'Hello, welcome to language learning',
+                    'español': 'Hola, bienvenido al aprendizaje de idiomas',
+                    'francés': 'Bonjour, bienvenue à l\'apprentissage des langues',
+                    'alemán': 'Hallo, willkommen beim Sprachenlernen',
+                    'italiano': 'Ciao, benvenuto all\'apprendimento delle lingue',
+                    'portugués': 'Olá, bem-vindo ao aprendizado de idiomas',
+                    'chino': '你好，欢迎学习语言',
+                    'japonés': 'こんにちは、言語学習へようこそ'
+                };
+                
+                document.getElementById('ttsTest').value = testExamples[this.value] || testExamples['inglés'];
+            }
+        });
         
         // Configurar delegación de eventos para sugerencias de imágenes
         document.getElementById('imageSelectionContainer').addEventListener('click', function(e) {
@@ -2481,10 +2508,36 @@ INSTRUCCIONES:
         const cardImage = document.getElementById('cardImage');
         const cardImageBack = document.getElementById('cardImageBack');
         
-        cardImage.src = imageUrl;
-        cardImage.alt = card.target;
-        cardImageBack.src = imageUrl;
-        cardImageBack.alt = card.native;
+        // Forzar recarga de imagen si es necesario
+        cardImage.src = '';
+        cardImageBack.src = '';
+        
+        setTimeout(() => {
+            cardImage.src = imageUrl;
+            cardImage.alt = card.target;
+            cardImageBack.src = imageUrl;
+            cardImageBack.alt = card.native;
+            
+            // Manejar error de carga
+            cardImage.onerror = function() {
+                console.log(`Error cargando imagen para ${card.target}, usando respaldo`);
+                const topic = document.getElementById('topic').value.toLowerCase();
+                let category = 'default';
+                
+                if (topic.includes('comida') || topic.includes('food') || topic.includes('alimento')) {
+                    category = 'comida';
+                } else if (topic.includes('animal') || topic.includes('pet') || topic.includes('mascota')) {
+                    category = 'animales';
+                } else if (topic.includes('viaje') || topic.includes('travel') || topic.includes('turismo')) {
+                    category = 'viajes';
+                }
+                
+                const randomIndex = Math.floor(Math.random() * backupImages[category].length);
+                this.src = backupImages[category][randomIndex];
+            };
+            
+            cardImageBack.onerror = cardImage.onerror;
+        }, 10);
         
         // Mostrar IPA si está disponible y el idioma objetivo es inglés
         const ipaElement = document.getElementById('cardIpa');
@@ -2515,7 +2568,7 @@ INSTRUCCIONES:
         document.getElementById('totalCards').textContent = flashcardsData.length;
         document.getElementById('cardCounter').textContent = `Flashcard ${index + 1} de ${flashcardsData.length}`;
         
-        // Actualizar estado de los botadores de navegación
+        // Actualizar estado de los botones de navegación
         document.getElementById('prevCard').disabled = index === 0;
         document.getElementById('nextCard').disabled = index === flashcardsData.length - 1;
     }
@@ -2571,32 +2624,90 @@ INSTRUCCIONES:
         
         // Actualizar opciones de voz si hay voces disponibles
         if (voices.length > 0) {
-            const voiceSelect = document.getElementById('ttsVoice');
-            const currentVoice = voiceSelect.value;
-            voiceSelect.innerHTML = '';
-            
-            voices.forEach((voice, index) => {
-                const option = document.createElement('option');
-                option.value = voice.name;
-                option.textContent = `${voice.name} (${voice.lang})`;
-                voiceSelect.appendChild(option);
-            });
-            
-            // Intentar mantener la voz seleccionada
-            const voiceExists = voices.some(v => v.name === currentVoice);
-            if (voiceExists) {
-                voiceSelect.value = currentVoice;
-                ttsSettings.voice = currentVoice;
-            } else if (voices.length > 0) {
-                voiceSelect.value = voices[0].name;
-                ttsSettings.voice = voices[0].name;
-            }
+            updateVoiceOptionsForLanguage();
         }
     }
     
     // Recargar voces cuando estén disponibles
     if (speechSynthesis) {
         speechSynthesis.onvoiceschanged = loadVoices;
+    }
+    
+    // Función para obtener voces por idioma
+    function getVoicesByLanguage(language) {
+        const languageMap = {
+            'inglés': ['en-US', 'en-GB', 'en-AU', 'en'],
+            'español': ['es-ES', 'es-MX', 'es-US', 'es'],
+            'francés': ['fr-FR', 'fr-CA', 'fr'],
+            'alemán': ['de-DE', 'de-AT', 'de'],
+            'italiano': ['it-IT', 'it'],
+            'portugués': ['pt-BR', 'pt-PT', 'pt'],
+            'chino': ['zh-CN', 'zh-TW', 'zh-HK', 'zh'],
+            'japonés': ['ja-JP', 'ja']
+        };
+        
+        const langCodes = languageMap[language.toLowerCase()] || ['en-US'];
+        return voices.filter(voice => 
+            langCodes.some(code => voice.lang.startsWith(code))
+        );
+    }
+    
+    // Función para actualizar las opciones de voz según el idioma objetivo
+    function updateVoiceOptionsForLanguage(language) {
+        if (!speechSynthesis || voices.length === 0) return;
+        
+        const voiceSelect = document.getElementById('ttsVoice');
+        const targetLanguage = language || document.getElementById('targetLanguage').value;
+        const availableVoices = getVoicesByLanguage(targetLanguage);
+        
+        // Guardar la selección actual
+        const currentSelection = voiceSelect.value;
+        
+        // Limpiar opciones
+        voiceSelect.innerHTML = '';
+        
+        if (availableVoices.length > 0) {
+            // Agregar voces del idioma objetivo primero
+            availableVoices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.value = voice.name;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                if (index === 0) option.selected = true;
+                voiceSelect.appendChild(option);
+            });
+            
+            // Separador
+            const separator = document.createElement('option');
+            separator.disabled = true;
+            separator.textContent = '────────── Otras voces ──────────';
+            voiceSelect.appendChild(separator);
+            
+            // Agregar otras voces disponibles
+            voices.forEach(voice => {
+                if (!availableVoices.includes(voice)) {
+                    const option = document.createElement('option');
+                    option.value = voice.name;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    voiceSelect.appendChild(option);
+                }
+            });
+            
+            // Restaurar selección si existe
+            if (currentSelection && Array.from(voiceSelect.options).some(opt => opt.value === currentSelection)) {
+                voiceSelect.value = currentSelection;
+            }
+            
+            ttsSettings.voice = voiceSelect.value;
+        } else {
+            // Si no hay voces para el idioma, mostrar todas
+            voices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.value = voice.name;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                if (index === 0) option.selected = true;
+                voiceSelect.appendChild(option);
+            });
+        }
     }
     
     // Función para alternar TTS
@@ -2626,6 +2737,9 @@ INSTRUCCIONES:
         document.getElementById('ttsRateValue').textContent = ttsSettings.rate.toFixed(1);
         document.getElementById('ttsPitchValue').textContent = ttsSettings.pitch.toFixed(1);
         document.getElementById('ttsVolumeValue').textContent = ttsSettings.volume.toFixed(1);
+        
+        // Actualizar la selección de voz si cambia el idioma
+        updateVoiceOptionsForLanguage();
     }
     
     // Función para probar TTS
@@ -2651,31 +2765,40 @@ INSTRUCCIONES:
         utterance.pitch = ttsSettings.pitch;
         utterance.volume = ttsSettings.volume;
         
-        // Buscar la voz seleccionada
-        const selectedVoice = voices.find(voice => voice.name === ttsSettings.voice);
-        if (selectedVoice) {
-            utterance.voice = selectedVoice;
-        }
-        
         // Para palabras de flashcards, ajustar el idioma automáticamente
         if (isCardWord) {
             const targetLanguage = document.getElementById('targetLanguage').value;
-            if (targetLanguage === 'español') {
-                utterance.lang = 'es-ES';
-            } else if (targetLanguage === 'francés') {
-                utterance.lang = 'fr-FR';
-            } else if (targetLanguage === 'alemán') {
-                utterance.lang = 'de-DE';
-            } else if (targetLanguage === 'italiano') {
-                utterance.lang = 'it-IT';
-            } else if (targetLanguage === 'portugués') {
-                utterance.lang = 'pt-BR';
-            } else if (targetLanguage === 'chino') {
-                utterance.lang = 'zh-CN';
-            } else if (targetLanguage === 'japonés') {
-                utterance.lang = 'ja-JP';
+            
+            // Buscar la mejor voz para el idioma objetivo
+            const targetVoices = getVoicesByLanguage(targetLanguage);
+            
+            if (targetVoices.length > 0) {
+                // Usar la voz seleccionada si está disponible para este idioma
+                const selectedVoiceName = ttsSettings.voice;
+                const selectedVoice = voices.find(v => v.name === selectedVoiceName);
+                
+                if (selectedVoice && targetVoices.includes(selectedVoice)) {
+                    utterance.voice = selectedVoice;
+                    utterance.lang = selectedVoice.lang;
+                } else {
+                    // Usar la primera voz disponible para el idioma objetivo
+                    utterance.voice = targetVoices[0];
+                    utterance.lang = targetVoices[0].lang;
+                }
             } else {
-                utterance.lang = 'en-US'; // Por defecto inglés
+                // Si no hay voces para el idioma, usar la seleccionada
+                const selectedVoice = voices.find(v => v.name === ttsSettings.voice);
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                    utterance.lang = selectedVoice.lang;
+                }
+            }
+        } else {
+            // Para texto de prueba, usar la voz seleccionada
+            const selectedVoice = voices.find(voice => voice.name === ttsSettings.voice);
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+                utterance.lang = selectedVoice.lang;
             }
         }
         

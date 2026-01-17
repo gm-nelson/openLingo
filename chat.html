@@ -141,8 +141,8 @@
             display: none;
         }
 
-        /* Form Section */
-        .form-section {
+        /* Prompt Generator Section (Main Screen) */
+        .prompt-generator-section {
             padding: 16px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -150,7 +150,7 @@
             overscroll-behavior: contain;
         }
 
-        .form-section h2 {
+        .prompt-generator-section h2 {
             margin-bottom: 16px;
             color: var(--primary-color);
             font-size: 20px;
@@ -180,7 +180,7 @@
             background: white;
             -webkit-appearance: none;
             appearance: none;
-            font-size: 16px !important;
+            font-size: 16px !important; /* Previene zoom en iOS */
         }
 
         .form-group textarea {
@@ -341,6 +341,27 @@
             color: white;
         }
 
+        .chatgpt-icon { background: var(--chatgpt-color); }
+        .deepseek-icon { background: var(--deepseek-color); }
+        .gemini-icon { background: var(--gemini-color); }
+        .copilot-icon { background: var(--copilot-color); }
+
+        /* Pasteboard Section */
+        .pasteboard-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 15px;
+            border: 1px dashed var(--border-color);
+        }
+
+        .pasteboard-section h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+            text-align: center;
+        }
+
         /* Chat Section */
         .chat-header {
             background: var(--primary-color);
@@ -394,7 +415,7 @@
             opacity: 0.9;
         }
 
-        /* Chat Messages */
+        /* Chat Messages - OPTIMIZADO PARA iOS */
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -873,7 +894,7 @@
 
         /* Ajustes para pantallas más altas */
         @media (max-height: 700px) {
-            .form-section h2,
+            .prompt-generator-section h2,
             .lesson-manager h2,
             .editor-section h2 {
                 font-size: 18px;
@@ -948,326 +969,105 @@
             overscroll-behavior: contain;
         }
 
-        /* Modal Styles */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            padding: 20px;
-            animation: fadeIn 0.3s;
+        /* Lesson Actions colors */
+        .lesson-btn.play {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .lesson-btn.edit {
+            background: var(--warning-color);
+            color: white;
+        }
+        
+        .lesson-btn.delete {
+            background: var(--danger-color);
+            color: white;
         }
 
-        .modal-content {
+        /* Dialog Editor Styles */
+        .dialog-item {
             background: white;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.3s;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
         }
 
-        @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
+        .dialog-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--primary-color);
-            color: white;
-            border-radius: 20px 20px 0 0;
+            margin-bottom: 12px;
         }
 
-        .modal-header h3 {
-            font-size: 18px;
-            font-weight: 600;
+        .dialog-header h4 {
+            font-size: 16px;
+            color: var(--text-dark);
         }
 
-        .modal-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
+        .dialog-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dialog-btn {
             width: 36px;
             height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-
-        .modal-close:active {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .step-indicator {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-
-        .step {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s;
-            border: 2px solid var(--border-color);
-            background: white;
-            color: var(--text-light);
-        }
-
-        .step.active {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .step.completed {
-            background: var(--success-color);
-            color: white;
-            border-color: var(--success-color);
-        }
-
-        .step-line {
-            flex: 1;
-            height: 2px;
-            background: var(--border-color);
-            max-width: 40px;
-        }
-
-        .step-line.completed {
-            background: var(--success-color);
-        }
-
-        .step-content {
-            min-height: 200px;
-        }
-
-        .step-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: var(--text-dark);
-        }
-
-        .step-description {
-            color: var(--text-light);
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-
-        .pasteboard-container {
-            margin: 20px 0;
-        }
-
-        .pasteboard {
-            background: #f8f9fa;
-            border: 2px dashed var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            min-height: 150px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.3s;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .pasteboard:active {
-            background: #e9ecef;
-            transform: scale(0.99);
-        }
-
-        .pasteboard-icon {
-            font-size: 48px;
-            color: var(--primary-color);
-            margin-bottom: 15px;
-        }
-
-        .pasteboard-text {
-            font-size: 16px;
-            color: var(--text-dark);
-            margin-bottom: 8px;
-        }
-
-        .pasteboard-hint {
-            font-size: 14px;
-            color: var(--text-light);
-        }
-
-        .lesson-preview {
-            background: white;
+            border-radius: 6px;
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 15px;
-            margin-top: 15px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .lesson-preview h4 {
-            font-size: 14px;
-            color: var(--text-dark);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .lesson-preview-item {
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 13px;
-            color: var(--text-light);
-        }
-
-        .lesson-preview-item:last-child {
-            border-bottom: none;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 25px;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
+            background: white;
             cursor: pointer;
-            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            transition: all 0.2s;
         }
 
-        .modal-btn:active {
-            transform: scale(0.98);
+        .dialog-btn:active {
+            transform: scale(0.95);
         }
 
-        .modal-btn-secondary {
-            background: var(--secondary-color);
-            color: var(--text-dark);
+        .dialog-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
-        .modal-btn-primary {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .step-textarea {
+        .dialog-content textarea,
+        .dialog-content input {
             width: 100%;
-            min-height: 120px;
-            padding: 15px;
+            padding: 12px;
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            font-size: 16px;
-            resize: vertical;
-            font-family: monospace;
-        }
-
-        .step-textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-
-        .json-validation {
-            margin-top: 10px;
-            font-size: 14px;
-            padding: 10px;
             border-radius: 8px;
-            display: none;
-        }
-
-        .json-validation.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            display: block;
-        }
-
-        .json-validation.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            display: block;
-        }
-
-        .save-options {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .save-option {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-        }
-
-        .save-option:active {
-            transform: scale(0.98);
-        }
-
-        .save-option.selected {
-            border-color: var(--primary-color);
-            background: rgba(0, 132, 255, 0.05);
-        }
-
-        .save-option i {
-            font-size: 24px;
-            margin-bottom: 10px;
-            color: var(--primary-color);
-        }
-
-        .save-option h5 {
             font-size: 14px;
-            margin-bottom: 5px;
-            color: var(--text-dark);
+            margin-bottom: 12px;
         }
 
-        .save-option p {
-            font-size: 12px;
+        .dialog-content textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+
+        /* No lessons message */
+        .no-lessons {
+            text-align: center;
+            padding: 40px 20px;
             color: var(--text-light);
+        }
+
+        .no-lessons i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Home Button Styling */
+        .home-btn {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
@@ -1275,7 +1075,7 @@
     <div class="app-container">
         <!-- App Header -->
         <div class="app-header">
-            <h1 id="app-title">English Tutor</h1>
+            <h1 id="app-title">Prompt Generator</h1>
             <div class="header-icons">
                 <i class="fas fa-home" id="home-btn" title="Home"></i>
                 <i class="fas fa-book" id="lessons-btn" title="My Lessons"></i>
@@ -1283,10 +1083,10 @@
             </div>
         </div>
 
-        <!-- Form Section -->
-        <section class="section" id="form-section">
-            <div class="form-section">
-                <h2>Create Lesson</h2>
+        <!-- Prompt Generator Section (Main Screen) -->
+        <section class="section" id="prompt-generator-section">
+            <div class="prompt-generator-section">
+                <h2>🤖 AI Prompt Generator</h2>
                 
                 <div class="form-group">
                     <label for="topic">Topic</label>
@@ -1318,15 +1118,12 @@
                 </div>
                 
                 <div class="form-buttons">
-                    <button class="btn btn-secondary" id="import-lesson-btn">
-                        <i class="fas fa-file-import"></i> Import Lesson
-                    </button>
                     <button class="btn btn-primary" id="generate-prompt-btn">
                         <i class="fas fa-magic"></i> Generate Prompt
                     </button>
                 </div>
                 
-                <!-- Prompt Section -->
+                <!-- Generated Prompt Section -->
                 <div class="prompt-section" id="prompt-section" style="display: none;">
                     <h3>📋 AI Prompt Generated!</h3>
                     <p style="font-size: 14px; color: var(--text-light); margin-bottom: 12px; text-align: center;">
@@ -1338,7 +1135,7 @@
                             <i class="far fa-copy"></i> Copy Again
                         </button>
                         <button class="btn btn-primary" id="load-lesson-btn">
-                            <i class="fas fa-play"></i> Load Lesson
+                            <i class="fas fa-file-import"></i> Load Lesson
                         </button>
                     </div>
                 </div>
@@ -1359,7 +1156,7 @@
                                 <h4>ChatGPT</h4>
                                 <p style="font-size: 12px;">OpenAI • Best for creative conversations</p>
                             </div>
-                            <button class="btn btn-chatgpt" style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px;">
+                            <button class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px; background: var(--chatgpt-color);">
                                 <i class="fas fa-external-link-alt"></i> Open ChatGPT
                             </button>
                         </div>
@@ -1372,7 +1169,7 @@
                                 <h4>DeepSeek</h4>
                                 <p style="font-size: 12px;">DeepSeek • Fast & efficient reasoning</p>
                             </div>
-                            <button class="btn btn-deepseek" style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px;">
+                            <button class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px; background: var(--deepseek-color);">
                                 <i class="fas fa-external-link-alt"></i> Open DeepSeek
                             </button>
                         </div>
@@ -1385,7 +1182,7 @@
                                 <h4>Gemini</h4>
                                 <p style="font-size: 12px;">Google • Accurate & up-to-date info</p>
                             </div>
-                            <button class="btn btn-gemini" style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px;">
+                            <button class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px; background: var(--gemini-color);">
                                 <i class="fas fa-external-link-alt"></i> Open Gemini
                             </button>
                         </div>
@@ -1398,7 +1195,7 @@
                                 <h4>Copilot</h4>
                                 <p style="font-size: 12px;">Microsoft • Detailed with web search</p>
                             </div>
-                            <button class="btn btn-copilot" style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px;">
+                            <button class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px; background: var(--copilot-color);">
                                 <i class="fas fa-external-link-alt"></i> Open Copilot
                             </button>
                         </div>
@@ -1409,16 +1206,19 @@
                     </p>
                 </div>
                 
-                <!-- Vocabulary Section -->
-                <div class="vocabulary-section" id="vocabulary-section" style="display: none; background: #f8f9fa; border-radius: 12px; padding: 16px; margin-top: 15px;">
-                    <h3>📚 Vocabulary (Optional)</h3>
-                    <textarea id="vocabulary-json" placeholder='Paste vocabulary JSON here or leave empty' style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); min-height: 80px; font-size: 14px; margin-bottom: 12px;"></textarea>
+                <!-- Pasteboard Section -->
+                <div class="pasteboard-section" id="pasteboard-section" style="display: none;">
+                    <h3>📝 Paste Your Lesson JSON</h3>
+                    <textarea id="lesson-json" placeholder='Paste your lesson JSON here (generated by AI)...' style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); min-height: 120px; font-size: 14px; margin-bottom: 12px; font-family: 'Courier New', monospace;"></textarea>
                     <div class="form-buttons">
-                        <button class="btn btn-secondary" id="save-lesson-only-btn">
-                            <i class="fas fa-save"></i> Save Only
+                        <button class="btn btn-secondary" id="clear-json-btn">
+                            <i class="fas fa-times"></i> Clear
                         </button>
-                        <button class="btn btn-primary" id="start-chat-btn">
-                            <i class="fas fa-comments"></i> Start Practice
+                        <button class="btn btn-primary" id="save-pasted-lesson-btn">
+                            <i class="fas fa-save"></i> Save Lesson
+                        </button>
+                        <button class="btn btn-success" id="start-practice-btn">
+                            <i class="fas fa-play"></i> Start Practice
                         </button>
                     </div>
                 </div>
@@ -1554,131 +1354,6 @@
     
     <div class="overlay" id="overlay"></div>
 
-    <!-- MODAL PARA IMPORTAR LECCIÓN PASO A PASO -->
-    <div class="modal hidden" id="import-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>📥 Import Lesson</h3>
-                <button class="modal-close" id="close-import-modal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="modal-body">
-                <!-- Paso 1: Pegar JSON -->
-                <div id="step-1" class="step-content">
-                    <div class="step-indicator">
-                        <div class="step active">1</div>
-                        <div class="step-line"></div>
-                        <div class="step">2</div>
-                        <div class="step-line"></div>
-                        <div class="step">3</div>
-                    </div>
-                    
-                    <h3 class="step-title">Step 1: Paste Lesson JSON</h3>
-                    <p class="step-description">
-                        Copy the JSON from your AI assistant and paste it below. The app will automatically validate the format.
-                    </p>
-                    
-                    <div class="pasteboard-container">
-                        <div class="pasteboard" id="pasteboard">
-                            <div class="pasteboard-icon">
-                                <i class="fas fa-paste"></i>
-                            </div>
-                            <div class="pasteboard-text">
-                                Tap to paste JSON here
-                            </div>
-                            <div class="pasteboard-hint">
-                                (Ctrl+V or Cmd+V)
-                            </div>
-                        </div>
-                        
-                        <textarea class="step-textarea hidden" id="json-input" placeholder='Paste your lesson JSON here...'></textarea>
-                        
-                        <div id="json-validation" class="json-validation"></div>
-                    </div>
-                    
-                    <div class="modal-buttons">
-                        <button class="modal-btn modal-btn-secondary" id="cancel-import">
-                            Cancel
-                        </button>
-                        <button class="modal-btn modal-btn-primary" id="next-step-1" disabled>
-                            Next <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Paso 2: Vista previa -->
-                <div id="step-2" class="step-content hidden">
-                    <div class="step-indicator">
-                        <div class="step completed">1</div>
-                        <div class="step-line completed"></div>
-                        <div class="step active">2</div>
-                        <div class="step-line"></div>
-                        <div class="step">3</div>
-                    </div>
-                    
-                    <h3 class="step-title">Step 2: Preview Lesson</h3>
-                    <p class="step-description">
-                        Review your lesson before saving. Make sure everything looks correct.
-                    </p>
-                    
-                    <div class="lesson-preview" id="lesson-preview">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                    
-                    <div class="modal-buttons">
-                        <button class="modal-btn modal-btn-secondary" id="prev-step-2">
-                            <i class="fas fa-arrow-left"></i> Back
-                        </button>
-                        <button class="modal-btn modal-btn-primary" id="next-step-2">
-                            Next <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Paso 3: Guardar opciones -->
-                <div id="step-3" class="step-content hidden">
-                    <div class="step-indicator">
-                        <div class="step completed">1</div>
-                        <div class="step-line completed"></div>
-                        <div class="step completed">2</div>
-                        <div class="step-line completed"></div>
-                        <div class="step active">3</div>
-                    </div>
-                    
-                    <h3 class="step-title">Step 3: Save Options</h3>
-                    <p class="step-description">
-                        Choose what to do with your imported lesson.
-                    </p>
-                    
-                    <div class="save-options">
-                        <div class="save-option selected" data-action="save-and-practice">
-                            <i class="fas fa-play-circle"></i>
-                            <h5>Save & Practice</h5>
-                            <p>Save lesson and start practicing immediately</p>
-                        </div>
-                        
-                        <div class="save-option" data-action="save-only">
-                            <i class="fas fa-save"></i>
-                            <h5>Save Only</h5>
-                            <p>Save to "My Lessons" for later use</p>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-buttons">
-                        <button class="modal-btn modal-btn-secondary" id="prev-step-3">
-                            <i class="fas fa-arrow-left"></i> Back
-                        </button>
-                        <button class="modal-btn modal-btn-primary" id="finish-import">
-                            Finish <i class="fas fa-check"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
         // State Management
         let currentLesson = null;
@@ -1689,8 +1364,6 @@
         let isConversationComplete = false;
         let editingLessonId = null;
         let currentPrompt = '';
-        let importedJson = '';
-        let currentStep = 1;
 
         // Local Storage Keys
         const STORAGE_KEYS = {
@@ -1715,7 +1388,7 @@
             // Prevenir bounce en iOS Safari
             document.addEventListener('touchmove', (e) => {
                 if (e.target.closest('.chat-messages') || 
-                    e.target.closest('.form-section') || 
+                    e.target.closest('.prompt-generator-section') || 
                     e.target.closest('.lesson-manager') ||
                     e.target.closest('.editor-section') ||
                     e.target.closest('.settings-content')) {
@@ -1728,7 +1401,7 @@
             loadLessons();
             initSpeechRecognition();
             setupEventListeners();
-            showSection('form-section');
+            showSection('prompt-generator-section');
             
             // Ajustar altura para iOS Safari
             if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
@@ -1744,18 +1417,18 @@
 
         function setupEventListeners() {
             // Navigation
-            document.getElementById('home-btn').addEventListener('click', () => showSection('form-section'));
+            document.getElementById('home-btn').addEventListener('click', () => showSection('prompt-generator-section'));
             document.getElementById('lessons-btn').addEventListener('click', () => showSection('lesson-manager'));
             document.getElementById('back-btn').addEventListener('click', goBack);
             document.getElementById('back-to-manager-btn').addEventListener('click', () => showSection('lesson-manager'));
             
-            // Form Section
+            // Prompt Generator Section
             document.getElementById('generate-prompt-btn').addEventListener('click', generatePrompt);
             document.getElementById('copy-prompt-btn').addEventListener('click', copyPrompt);
-            document.getElementById('load-lesson-btn').addEventListener('click', openImportModal);
-            document.getElementById('start-chat-btn').addEventListener('click', startChat);
-            document.getElementById('import-lesson-btn').addEventListener('click', openImportModal);
-            document.getElementById('save-lesson-only-btn').addEventListener('click', saveLessonOnly);
+            document.getElementById('load-lesson-btn').addEventListener('click', showPasteboardSection);
+            document.getElementById('save-pasted-lesson-btn').addEventListener('click', savePastedLesson);
+            document.getElementById('start-practice-btn').addEventListener('click', startPracticeFromPasteboard);
+            document.getElementById('clear-json-btn').addEventListener('click', clearJson);
             
             // Chat Section
             document.getElementById('save-chat-lesson-btn').addEventListener('click', saveCurrentLesson);
@@ -1786,26 +1459,6 @@
             // Close settings when clicking overlay
             document.getElementById('overlay').addEventListener('click', closeSettings);
             
-            // Modal de importación
-            document.getElementById('close-import-modal').addEventListener('click', closeImportModal);
-            document.getElementById('cancel-import').addEventListener('click', closeImportModal);
-            document.getElementById('pasteboard').addEventListener('click', focusJsonInput);
-            document.getElementById('json-input').addEventListener('input', validateJson);
-            document.getElementById('json-input').addEventListener('paste', handlePaste);
-            document.getElementById('next-step-1').addEventListener('click', goToStep2);
-            document.getElementById('prev-step-2').addEventListener('click', goToStep1);
-            document.getElementById('next-step-2').addEventListener('click', goToStep3);
-            document.getElementById('prev-step-3').addEventListener('click', goToStep2);
-            document.getElementById('finish-import').addEventListener('click', finishImport);
-            
-            // Save options click handlers
-            document.querySelectorAll('.save-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    document.querySelectorAll('.save-option').forEach(o => o.classList.remove('selected'));
-                    this.classList.add('selected');
-                });
-            });
-            
             // AI Model buttons
             document.querySelectorAll('.ai-model-card button').forEach(button => {
                 button.addEventListener('click', function(e) {
@@ -1832,7 +1485,7 @@
             document.addEventListener('touchmove', function(e) {
                 const target = e.target;
                 const isInScrollableArea = target.closest('.chat-messages') || 
-                                          target.closest('.form-section') || 
+                                          target.closest('.prompt-generator-section') || 
                                           target.closest('.lesson-manager') ||
                                           target.closest('.editor-section') ||
                                           target.closest('.settings-content');
@@ -1879,7 +1532,7 @@
             });
             document.getElementById(sectionId).classList.remove('hidden');
             document.getElementById('app-title').textContent = 
-                sectionId === 'form-section' ? 'English Tutor' :
+                sectionId === 'prompt-generator-section' ? 'Prompt Generator' :
                 sectionId === 'chat-section' ? 'Practice' :
                 sectionId === 'lesson-manager' ? 'My Lessons' :
                 sectionId === 'editor-section' ? 'Edit Lesson' : 'English Tutor';
@@ -1905,7 +1558,7 @@
 
         function goBack() {
             if (document.getElementById('chat-section').classList.contains('hidden')) {
-                showSection('form-section');
+                showSection('prompt-generator-section');
             } else {
                 showSection('lesson-manager');
             }
@@ -1987,7 +1640,7 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
             }, 100);
             
             // Mostrar notificación
-            showNotification('📋 Prompt copied to clipboard!\n🤖 Choose an AI model below.');
+            showNotification('📋 Prompt copied to clipboard!\n🤖 Choose an AI model below to generate your lesson.');
         }
 
         function copyPrompt() {
@@ -2017,269 +1670,85 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
                 });
         }
 
-        // NUEVA FUNCIÓN: Abrir modal de importación
-        function openImportModal() {
-            document.getElementById('import-modal').classList.remove('hidden');
-            document.getElementById('overlay').classList.add('active');
-            resetImportModal();
+        function showPasteboardSection() {
+            document.getElementById('pasteboard-section').style.display = 'block';
+            document.getElementById('pasteboard-section').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // NUEVA FUNCIÓN: Cerrar modal de importación
-        function closeImportModal() {
-            document.getElementById('import-modal').classList.add('hidden');
-            document.getElementById('overlay').classList.remove('active');
-            resetImportModal();
+        function clearJson() {
+            document.getElementById('lesson-json').value = '';
         }
 
-        // NUEVA FUNCIÓN: Resetear modal
-        function resetImportModal() {
-            currentStep = 1;
-            importedJson = '';
-            document.getElementById('json-input').value = '';
-            document.getElementById('json-validation').className = 'json-validation';
-            document.getElementById('json-validation').textContent = '';
-            document.getElementById('pasteboard').classList.remove('hidden');
-            document.getElementById('json-input').classList.add('hidden');
-            document.getElementById('next-step-1').disabled = true;
+        function savePastedLesson() {
+            const jsonStr = document.getElementById('lesson-json').value.trim();
             
-            // Reset steps
-            document.querySelectorAll('.step-content').forEach(step => step.classList.add('hidden'));
-            document.getElementById('step-1').classList.remove('hidden');
-            
-            // Reset step indicators
-            const steps = document.querySelectorAll('.step');
-            steps.forEach((step, index) => {
-                step.className = 'step';
-                if (index === 0) step.classList.add('active');
-            });
-            
-            // Reset step lines
-            document.querySelectorAll('.step-line').forEach(line => {
-                line.classList.remove('completed');
-            });
-            
-            // Reset save option
-            document.querySelectorAll('.save-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            document.querySelector('[data-action="save-and-practice"]').classList.add('selected');
-        }
-
-        // NUEVA FUNCIÓN: Enfocar input de JSON
-        function focusJsonInput() {
-            const pasteboard = document.getElementById('pasteboard');
-            const jsonInput = document.getElementById('json-input');
-            
-            pasteboard.classList.add('hidden');
-            jsonInput.classList.remove('hidden');
-            jsonInput.focus();
-            
-            // Intentar pegar automáticamente
-            jsonInput.select();
-            document.execCommand('paste');
-        }
-
-        // NUEVA FUNCIÓN: Manejar pegado
-        function handlePaste(event) {
-            setTimeout(() => {
-                validateJson();
-            }, 100);
-        }
-
-        // NUEVA FUNCIÓN: Validar JSON
-        function validateJson() {
-            const jsonInput = document.getElementById('json-input');
-            const validationDiv = document.getElementById('json-validation');
-            const nextButton = document.getElementById('next-step-1');
-            
-            const text = jsonInput.value.trim();
-            
-            if (!text) {
-                validationDiv.className = 'json-validation';
-                validationDiv.textContent = '';
-                nextButton.disabled = true;
+            if (!jsonStr) {
+                alert('Please paste a lesson JSON first!');
                 return;
             }
             
             try {
-                const parsed = JSON.parse(text);
-                importedJson = parsed;
-                
-                // Verificar estructura básica
-                if (parsed.lesson && parsed.lesson.topic && parsed.lesson.conversation) {
-                    validationDiv.className = 'json-validation success';
-                    validationDiv.innerHTML = `
-                        <i class="fas fa-check-circle"></i> Valid lesson JSON!
-                        <br><small>Topic: ${parsed.lesson.topic} • ${parsed.lesson.conversation.length} dialogs</small>
-                    `;
-                    nextButton.disabled = false;
-                } else if (parsed.topic && parsed.conversation) {
-                    // Si es solo el objeto lesson sin el wrapper
-                    importedJson = { lesson: parsed };
-                    validationDiv.className = 'json-validation success';
-                    validationDiv.innerHTML = `
-                        <i class="fas fa-check-circle"></i> Valid lesson JSON!
-                        <br><small>Topic: ${parsed.topic} • ${parsed.conversation.length} dialogs</small>
-                    `;
-                    nextButton.disabled = false;
-                } else {
-                    throw new Error('Invalid lesson structure');
+                const lessonData = JSON.parse(jsonStr);
+                if (!lessonData.lesson || !lessonData.lesson.conversation) {
+                    throw new Error('Invalid lesson format');
                 }
+                
+                // Auto-save al cargar
+                saveLessonToStorage(lessonData.lesson);
+                
+                showNotification('✅ Lesson saved successfully!\nYou can find it in "My Lessons"');
+                
+                // Clear the textarea
+                document.getElementById('lesson-json').value = '';
+                
+                // Go to lessons manager
+                setTimeout(() => {
+                    showSection('lesson-manager');
+                }, 1500);
+                
             } catch (error) {
-                validationDiv.className = 'json-validation error';
-                validationDiv.innerHTML = `
-                    <i class="fas fa-exclamation-circle"></i> Invalid JSON format
-                    <br><small>${error.message}</small>
-                `;
-                nextButton.disabled = true;
-                importedJson = '';
+                console.error('Invalid JSON:', error);
+                alert('Invalid JSON format. Please check the format and try again.\n\nError: ' + error.message);
             }
         }
 
-        // NUEVA FUNCIÓN: Ir al paso 2
-        function goToStep2() {
-            if (!importedJson) return;
+        function startPracticeFromPasteboard() {
+            const jsonStr = document.getElementById('lesson-json').value.trim();
             
-            currentStep = 2;
-            
-            // Actualizar indicadores
-            document.querySelectorAll('.step')[0].classList.remove('active');
-            document.querySelectorAll('.step')[0].classList.add('completed');
-            document.querySelectorAll('.step-line')[0].classList.add('completed');
-            document.querySelectorAll('.step')[1].classList.add('active');
-            
-            // Mostrar paso 2
-            document.getElementById('step-1').classList.add('hidden');
-            document.getElementById('step-2').classList.remove('hidden');
-            
-            // Mostrar vista previa
-            showLessonPreview();
-        }
-
-        // NUEVA FUNCIÓN: Mostrar vista previa
-        function showLessonPreview() {
-            const previewDiv = document.getElementById('lesson-preview');
-            
-            if (!importedJson || !importedJson.lesson) {
-                previewDiv.innerHTML = '<p style="color: var(--text-light); text-align: center;">No lesson to preview</p>';
+            if (!jsonStr) {
+                alert('Please paste a lesson JSON first!');
                 return;
             }
             
-            const lesson = importedJson.lesson;
-            let html = `
-                <h4><i class="fas fa-book"></i> ${lesson.topic || 'Untitled Lesson'}</h4>
-                <div class="lesson-preview-item">
-                    <strong>Level:</strong> ${lesson.level || 'intermediate'}
-                </div>
-                <div class="lesson-preview-item">
-                    <strong>Focus:</strong> ${lesson.focus || 'conversation'}
-                </div>
-                <div class="lesson-preview-item">
-                    <strong>Dialogs:</strong> ${lesson.conversation ? lesson.conversation.length : 0}
-                </div>
-            `;
-            
-            if (lesson.description) {
-                html += `
-                    <div class="lesson-preview-item">
-                        <strong>Description:</strong> ${lesson.description.substring(0, 100)}${lesson.description.length > 100 ? '...' : ''}
-                    </div>
-                `;
-            }
-            
-            // Mostrar primeros 2-3 diálogos
-            if (lesson.conversation && lesson.conversation.length > 0) {
-                html += `<div class="lesson-preview-item"><strong>Sample dialogs:</strong></div>`;
-                lesson.conversation.slice(0, 3).forEach((dialog, index) => {
-                    html += `
-                        <div class="lesson-preview-item" style="font-style: italic;">
-                            ${index + 1}. ${dialog.message.substring(0, 60)}${dialog.message.length > 60 ? '...' : ''}
-                        </div>
-                    `;
-                });
-                
-                if (lesson.conversation.length > 3) {
-                    html += `<div class="lesson-preview-item">... and ${lesson.conversation.length - 3} more</div>`;
+            try {
+                const lessonData = JSON.parse(jsonStr);
+                if (!lessonData.lesson || !lessonData.lesson.conversation) {
+                    throw new Error('Invalid lesson format');
                 }
-            }
-            
-            previewDiv.innerHTML = html;
-        }
-
-        // NUEVA FUNCIÓN: Ir al paso 3
-        function goToStep3() {
-            currentStep = 3;
-            
-            // Actualizar indicadores
-            document.querySelectorAll('.step')[1].classList.remove('active');
-            document.querySelectorAll('.step')[1].classList.add('completed');
-            document.querySelectorAll('.step-line')[1].classList.add('completed');
-            document.querySelectorAll('.step')[2].classList.add('active');
-            
-            // Mostrar paso 3
-            document.getElementById('step-2').classList.add('hidden');
-            document.getElementById('step-3').classList.remove('hidden');
-        }
-
-        // NUEVA FUNCIÓN: Volver al paso 1
-        function goToStep1() {
-            currentStep = 1;
-            
-            // Actualizar indicadores
-            document.querySelectorAll('.step')[1].classList.remove('active', 'completed');
-            document.querySelectorAll('.step')[0].classList.add('active');
-            document.querySelectorAll('.step')[0].classList.remove('completed');
-            document.querySelectorAll('.step-line')[0].classList.remove('completed');
-            
-            // Mostrar paso 1
-            document.getElementById('step-2').classList.add('hidden');
-            document.getElementById('step-1').classList.remove('hidden');
-        }
-
-        // NUEVA FUNCIÓN: Volver al paso 2
-        function goToStep2From3() {
-            goToStep2();
-        }
-
-        // NUEVA FUNCIÓN: Finalizar importación
-        function finishImport() {
-            if (!importedJson) {
-                showNotification('No lesson to import!');
-                return;
-            }
-            
-            const selectedOption = document.querySelector('.save-option.selected');
-            const action = selectedOption ? selectedOption.dataset.action : 'save-and-practice';
-            
-            // Guardar lección
-            currentLesson = importedJson;
-            saveLessonToStorage(currentLesson.lesson);
-            
-            // Mostrar notificación
-            showNotification('✅ Lesson imported successfully!');
-            
-            // Cerrar modal
-            closeImportModal();
-            
-            // Según la opción seleccionada
-            if (action === 'save-and-practice') {
-                // Ir a la sección de chat
-                document.getElementById('chat-topic').textContent = currentLesson.lesson.topic || 'English Practice';
-                document.getElementById('chat-level').textContent = (currentLesson.lesson.level || 'Intermediate') + ' Level';
-                document.getElementById('vocabulary-json').value = '';
-                document.getElementById('vocabulary-section').style.display = 'block';
+                
+                // Set current lesson
+                currentLesson = lessonData;
+                
+                // Auto-save al cargar
+                saveLessonToStorage(lessonData.lesson);
+                
+                // Start practice
                 startChat();
-            } else {
-                // Solo guardar y mostrar en "My Lessons"
-                showSection('lesson-manager');
+                
+            } catch (error) {
+                console.error('Invalid JSON:', error);
+                alert('Invalid JSON format. Please check the format and try again.\n\nError: ' + error.message);
             }
         }
 
         function saveLessonToStorage(lessonData) {
             const lessons = JSON.parse(localStorage.getItem(STORAGE_KEYS.LESSONS) || '[]');
             
-            // Check if lesson already exists (by topic)
-            const existingIndex = lessons.findIndex(l => l.topic === lessonData.topic && l.level === lessonData.level);
+            // Check if lesson already exists (by topic and level)
+            const existingIndex = lessons.findIndex(l => 
+                l.topic === lessonData.topic && 
+                l.level === lessonData.level
+            );
             
             const lessonToSave = {
                 id: Date.now(),
@@ -2308,8 +1777,44 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
             loadLessons(); // Refresh the list
         }
 
-        function getSampleLessonJSON() {
-            return JSON.stringify({
+        function startChat() {
+            // Update chat header
+            if (currentLesson && currentLesson.lesson) {
+                document.getElementById('chat-topic').textContent = currentLesson.lesson.topic || 'English Practice';
+                document.getElementById('chat-level').textContent = (currentLesson.lesson.level || 'Intermediate') + ' Level';
+            }
+            
+            // Switch to chat view
+            showSection('chat-section');
+            
+            // Reset state
+            document.getElementById('chat-messages').innerHTML = '';
+            currentQuestionIndex = 0;
+            conversationHistory = [];
+            isConversationComplete = false;
+            
+            // Enable input
+            document.getElementById('message-input').disabled = false;
+            document.getElementById('mic-btn').disabled = false;
+            document.getElementById('send-btn').disabled = false;
+            document.getElementById('input-area').classList.remove('disabled');
+            
+            // Start conversation
+            setTimeout(() => {
+                if (currentLesson && currentLesson.lesson && currentLesson.lesson.conversation && currentLesson.lesson.conversation.length > 0) {
+                    addBotMessageWithHints(currentLesson.lesson.conversation[0].message, 0, true);
+                    currentQuestionIndex = 1;
+                } else {
+                    // Fallback if no lesson
+                    currentLesson = getSampleLesson();
+                    addBotMessageWithHints(currentLesson.lesson.conversation[0].message, 0, true);
+                    currentQuestionIndex = 1;
+                }
+            }, 500);
+        }
+
+        function getSampleLesson() {
+            return {
                 "lesson": {
                     "topic": "Travel",
                     "level": "intermediate",
@@ -2339,58 +1844,7 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
                         }
                     ]
                 }
-            }, null, 2);
-        }
-
-        function startChat() {
-            // Try to parse vocabulary if provided
-            const vocabJson = document.getElementById('vocabulary-json').value.trim();
-            if (vocabJson) {
-                try {
-                    const vocab = JSON.parse(vocabJson);
-                    if (vocab.vocabulary) {
-                        console.log('Vocabulary loaded:', vocab.vocabulary.length, 'words');
-                        if (currentLesson) {
-                            currentLesson.vocabulary = vocab.vocabulary;
-                        }
-                    }
-                } catch (e) {
-                    console.warn('Invalid vocabulary JSON, continuing without it');
-                }
-            }
-            
-            // Auto-save the lesson before starting chat
-            if (currentLesson && currentLesson.lesson) {
-                saveLessonToStorage(currentLesson.lesson);
-            }
-            
-            // Switch to chat view
-            showSection('chat-section');
-            
-            // Reset state
-            document.getElementById('chat-messages').innerHTML = '';
-            currentQuestionIndex = 0;
-            conversationHistory = [];
-            isConversationComplete = false;
-            
-            // Enable input
-            document.getElementById('message-input').disabled = false;
-            document.getElementById('mic-btn').disabled = false;
-            document.getElementById('send-btn').disabled = false;
-            document.getElementById('input-area').classList.remove('disabled');
-            
-            // Start conversation
-            setTimeout(() => {
-                if (currentLesson && currentLesson.lesson && currentLesson.lesson.conversation && currentLesson.lesson.conversation.length > 0) {
-                    addBotMessageWithHints(currentLesson.lesson.conversation[0].message, 0, true);
-                    currentQuestionIndex = 1;
-                } else {
-                    // Fallback if no lesson
-                    currentLesson = JSON.parse(getSampleLessonJSON());
-                    addBotMessageWithHints(currentLesson.lesson.conversation[0].message, 0, true);
-                    currentQuestionIndex = 1;
-                }
-            }, 500);
+            };
         }
 
         // Lesson Management Functions
@@ -2403,7 +1857,7 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
                     <div class="no-lessons">
                         <i class="fas fa-book-open"></i>
                         <p>No saved lessons yet</p>
-                        <p style="font-size: 12px; margin-top: 10px;">Create or import a lesson to get started</p>
+                        <p style="font-size: 12px; margin-top: 10px;">Generate a prompt, use AI, and paste your lesson JSON</p>
                     </div>
                 `;
                 return;
@@ -2442,12 +1896,12 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
 
         function saveCurrentLesson() {
             if (!currentLesson || !currentLesson.lesson) {
-                alert('No lesson to save! Please create or load a lesson first.');
+                alert('No lesson to save! Please load a lesson first.');
                 return;
             }
             
             saveLessonToStorage(currentLesson.lesson);
-            alert('Lesson saved successfully!');
+            showNotification('Lesson saved successfully!');
         }
 
         window.playLesson = function(index) {
@@ -2659,7 +2113,7 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
             editingLessonId = null;
             loadLessons();
             showSection('lesson-manager');
-            alert('Lesson saved successfully!');
+            showNotification('Lesson saved successfully!');
         }
 
         window.deleteLesson = function(index) {
@@ -2669,6 +2123,7 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
             lessons.splice(index, 1);
             localStorage.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(lessons));
             loadLessons();
+            showNotification('Lesson deleted successfully!');
         };
 
         // Chat Functions
@@ -2857,6 +2312,7 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
             if (currentQuestionIndex < currentLesson.lesson.conversation.length) {
                 const nextQuestion = currentLesson.lesson.conversation[currentQuestionIndex];
                 setTimeout(() => {
+                    // Pasar el índice correcto: currentQuestionIndex (no currentQuestionIndex - 1)
                     addBotMessageWithHints(nextQuestion.message, currentQuestionIndex, true);
                     currentQuestionIndex++;
                 }, 1500);
@@ -2909,7 +2365,7 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
         };
 
         window.goToHome = function() {
-            showSection('form-section');
+            showSection('prompt-generator-section');
         };
 
         // Speech Functions
@@ -3050,17 +2506,6 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
             loadLessons();
             loadSettings();
             closeSettings();
-        }
-
-        function saveLessonOnly() {
-            if (!currentLesson || !currentLesson.lesson) {
-                alert('No lesson to save! Please load a lesson first.');
-                return;
-            }
-            
-            saveLessonToStorage(currentLesson.lesson);
-            alert('Lesson saved to your collection!');
-            showSection('lesson-manager');
         }
     </script>
 </body>

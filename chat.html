@@ -1069,13 +1069,68 @@
             align-items: center;
             justify-content: center;
         }
+        
+        /* Default Lessons Section */
+        .default-lessons-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .default-lessons-section h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+            text-align: center;
+        }
+
+        .default-lessons-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .default-lesson-card {
+            background: white;
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            -webkit-tap-highlight-color: rgba(0, 132, 255, 0.1);
+        }
+
+        .default-lesson-card:active {
+            transform: scale(0.98);
+            background-color: #f0f8ff;
+        }
+
+        .lesson-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            background: var(--primary-color);
+        }
     </style>
 </head>
 <body>
     <div class="app-container">
         <!-- App Header -->
         <div class="app-header">
-            <h1 id="app-title">Prompt Generator</h1>
+            <h1 id="app-title">English Tutor</h1>
             <div class="header-icons">
                 <i class="fas fa-home" id="home-btn" title="Home"></i>
                 <i class="fas fa-book" id="lessons-btn" title="My Lessons"></i>
@@ -1121,6 +1176,46 @@
                     <button class="btn btn-primary" id="generate-prompt-btn">
                         <i class="fas fa-magic"></i> Generate Prompt
                     </button>
+                </div>
+                
+                <!-- Default Lessons Section -->
+                <div class="default-lessons-section">
+                    <h3>📚 Default Lessons (5 dialogs each)</h3>
+                    <p style="font-size: 14px; color: var(--text-light); margin-bottom: 12px; text-align: center;">
+                        Click to start practicing immediately:
+                    </p>
+                    
+                    <div class="default-lessons-grid">
+                        <div class="default-lesson-card" id="default-lesson-1">
+                            <div class="lesson-icon">
+                                <i class="fas fa-handshake"></i>
+                            </div>
+                            <div class="lesson-info">
+                                <h4>Introducing Yourself</h4>
+                                <p style="font-size: 12px; color: var(--text-light); margin-top: 4px;">
+                                    5 dialogs • Beginner • Conversation Practice
+                                </p>
+                            </div>
+                            <button class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px;">
+                                <i class="fas fa-play"></i> Start Practice
+                            </button>
+                        </div>
+                        
+                        <div class="default-lesson-card" id="default-lesson-2">
+                            <div class="lesson-icon">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            <div class="lesson-info">
+                                <h4>Favorite Food & Restaurants</h4>
+                                <p style="font-size: 12px; color: var(--text-light); margin-top: 4px;">
+                                    5 dialogs • Intermediate • Food Conversation
+                                </p>
+                            </div>
+                            <button class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px;">
+                                <i class="fas fa-play"></i> Start Practice
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Generated Prompt Section -->
@@ -1371,6 +1466,100 @@
             SETTINGS: 'english_tutor_settings'
         };
 
+        // DEFAULT LESSONS
+        const DEFAULT_LESSONS = {
+            "introducing_yourself": {
+                "lesson": {
+                    "topic": "Introducing Yourself",
+                    "level": "beginner",
+                    "focus": "conversation",
+                    "description": "A beginner level conversation practice for introducing yourself with 5 dialogues",
+                    "conversation": [
+                        {
+                            "speaker": "bot",
+                            "message": "Hello! Let's start by introducing ourselves. What's your name?",
+                            "expectedResponses": ["my name is", "i am", "i'm", "called", "name"],
+                            "minLength": 4,
+                            "hints": ["Say: My name is [Your Name].", "Try: I'm [Your Name].", "Example: My name is Maria."]
+                        },
+                        {
+                            "speaker": "bot",
+                            "message": "Nice to meet you! Where are you from?",
+                            "expectedResponses": ["from", "i'm from", "originally from", "live in", "country", "city"],
+                            "minLength": 5,
+                            "hints": ["Say: I'm from [Country/City].", "Try: I come from [Country].", "Example: I'm from Spain."]
+                        },
+                        {
+                            "speaker": "bot",
+                            "message": "Great! What do you do? Are you a student or do you work?",
+                            "expectedResponses": ["i am a", "i work", "i study", "student", "job", "work as"],
+                            "minLength": 5,
+                            "hints": ["Say: I'm a student/teacher/engineer.", "Try: I work at [Company/Place].", "Example: I'm a student at the university."]
+                        },
+                        {
+                            "speaker": "bot",
+                            "message": "Interesting! What are your hobbies? What do you like to do in your free time?",
+                            "expectedResponses": ["i like", "i enjoy", "hobbies", "free time", "reading", "sports", "music"],
+                            "minLength": 6,
+                            "hints": ["Say: I like [Activity 1] and [Activity 2].", "Try: In my free time, I enjoy [Activity].", "Example: I like reading books and watching movies."]
+                        },
+                        {
+                            "speaker": "bot",
+                            "message": "Thanks for sharing! One last question: what's something interesting about you that you'd like people to know?",
+                            "expectedResponses": ["interesting", "special", "unique", "love", "passionate", "experience"],
+                            "minLength": 7,
+                            "hints": ["Share something unique: I can speak 3 languages.", "Mention an experience: I once traveled to Japan.", "Example: I love learning about different cultures."]
+                        }
+                    ]
+                }
+            },
+            "favorite_food": {
+                "lesson": {
+                    "topic": "Favorite Food & Restaurants",
+                    "level": "intermediate",
+                    "focus": "conversation",
+                    "description": "An intermediate conversation about food preferences and dining experiences with 5 dialogues",
+                    "conversation": [
+                        {
+                            "speaker": "bot",
+                            "message": "Let's talk about food! What's your favorite type of food or cuisine?",
+                            "expectedResponses": ["favorite food", "like", "cuisine", "italian", "mexican", "japanese", "chinese"],
+                            "minLength": 6,
+                            "hints": ["Say: My favorite cuisine is [Cuisine].", "Try: I really enjoy [Type of Food].", "Example: I love Italian food, especially pasta."]
+                        },
+                        {
+                            "speaker": "bot",
+                            "message": "That sounds delicious! What's your favorite restaurant and why do you like it?",
+                            "expectedResponses": ["favorite restaurant", "like because", "atmosphere", "food", "service", "location"],
+                            "minLength": 7,
+                            "hints": ["Describe the restaurant: The food is amazing.", "Mention the atmosphere: It has a cozy atmosphere.", "Example: My favorite is a small Italian restaurant near my home."]
+                        },
+                        {
+                            "speaker": "bot",
+                            "message": "Great choice! Do you prefer cooking at home or eating out at restaurants?",
+                            "expectedResponses": ["prefer", "cooking", "eating out", "home", "restaurant", "advantages"],
+                            "minLength": 8,
+                            "hints": ["Compare both: Cooking is cheaper, but restaurants are convenient.", "Give reasons: I prefer cooking because...", "Example: I like both, but cooking at home is healthier."]
+                        },
+                        {
+                            "speaker": "bot",
+                            "message": "Interesting! What's a dish you really enjoy cooking or ordering when you go out?",
+                            "expectedResponses": ["dish", "cook", "order", "specialty", "recipe", "enjoy making"],
+                            "minLength": 8,
+                            "hints": ["Describe the dish: It's called [Dish Name].", "Explain why: I like it because it's [Adjective].", "Example: I love making spaghetti carbonara."]
+                        },
+                        {
+                            "speaker": "bot",
+                            "message": "Last question: if you could try any food from around the world, what would it be and why?",
+                            "expectedResponses": ["try", "from around the world", "would like", "because", "curious", "heard about"],
+                            "minLength": 9,
+                            "hints": ["Name a specific dish: I'd like to try authentic sushi in Japan.", "Explain your interest: I'm curious about [Food].", "Example: I'd love to try real French pastries in Paris."]
+                        }
+                    ]
+                }
+            }
+        };
+
         // Initialize App
         document.addEventListener('DOMContentLoaded', initApp);
         
@@ -1413,6 +1602,26 @@
                     document.body.style.height = window.innerHeight + 'px';
                 }, 100);
             }
+            
+            // Check if default lessons exist in storage, if not, save them
+            checkAndSaveDefaultLessons();
+        }
+
+        function checkAndSaveDefaultLessons() {
+            const lessons = JSON.parse(localStorage.getItem(STORAGE_KEYS.LESSONS) || '[]');
+            
+            // Check if default lessons already exist
+            const defaultLesson1Exists = lessons.some(lesson => lesson.topic === "Introducing Yourself");
+            const defaultLesson2Exists = lessons.some(lesson => lesson.topic === "Favorite Food & Restaurants");
+            
+            // Save default lessons if they don't exist
+            if (!defaultLesson1Exists) {
+                saveLessonToStorage(DEFAULT_LESSONS.introducing_yourself.lesson, true);
+            }
+            
+            if (!defaultLesson2Exists) {
+                saveLessonToStorage(DEFAULT_LESSONS.favorite_food.lesson, true);
+            }
         }
 
         function setupEventListeners() {
@@ -1429,6 +1638,19 @@
             document.getElementById('save-pasted-lesson-btn').addEventListener('click', savePastedLesson);
             document.getElementById('start-practice-btn').addEventListener('click', startPracticeFromPasteboard);
             document.getElementById('clear-json-btn').addEventListener('click', clearJson);
+            
+            // Default Lessons
+            document.getElementById('default-lesson-1').addEventListener('click', () => startDefaultLesson('introducing_yourself'));
+            document.getElementById('default-lesson-1').querySelector('button').addEventListener('click', (e) => {
+                e.stopPropagation();
+                startDefaultLesson('introducing_yourself');
+            });
+            
+            document.getElementById('default-lesson-2').addEventListener('click', () => startDefaultLesson('favorite_food'));
+            document.getElementById('default-lesson-2').querySelector('button').addEventListener('click', (e) => {
+                e.stopPropagation();
+                startDefaultLesson('favorite_food');
+            });
             
             // Chat Section
             document.getElementById('save-chat-lesson-btn').addEventListener('click', saveCurrentLesson);
@@ -1496,6 +1718,14 @@
             }, { passive: false });
         }
 
+        function startDefaultLesson(lessonKey) {
+            if (DEFAULT_LESSONS[lessonKey]) {
+                currentLesson = DEFAULT_LESSONS[lessonKey];
+                startChat();
+                showNotification('Starting ' + DEFAULT_LESSONS[lessonKey].lesson.topic + ' lesson!');
+            }
+        }
+
         function openAIWithPrompt(modelId) {
             if (!currentPrompt) {
                 showNotification('Please generate a prompt first!');
@@ -1532,7 +1762,7 @@
             });
             document.getElementById(sectionId).classList.remove('hidden');
             document.getElementById('app-title').textContent = 
-                sectionId === 'prompt-generator-section' ? 'Prompt Generator' :
+                sectionId === 'prompt-generator-section' ? 'English Tutor' :
                 sectionId === 'chat-section' ? 'Practice' :
                 sectionId === 'lesson-manager' ? 'My Lessons' :
                 sectionId === 'editor-section' ? 'Edit Lesson' : 'English Tutor';
@@ -1741,7 +1971,7 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
             }
         }
 
-        function saveLessonToStorage(lessonData) {
+        function saveLessonToStorage(lessonData, isDefault = false) {
             const lessons = JSON.parse(localStorage.getItem(STORAGE_KEYS.LESSONS) || '[]');
             
             // Check if lesson already exists (by topic and level)
@@ -1758,7 +1988,8 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
                 conversation: lessonData.conversation,
                 description: lessonData.description || "",
                 createdAt: new Date().toISOString(),
-                lastPracticed: new Date().toISOString()
+                lastPracticed: new Date().toISOString(),
+                isDefault: isDefault
             };
             
             if (existingIndex !== -1) {
@@ -1806,45 +2037,10 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
                     currentQuestionIndex = 1;
                 } else {
                     // Fallback if no lesson
-                    currentLesson = getSampleLesson();
-                    addBotMessageWithHints(currentLesson.lesson.conversation[0].message, 0, true);
+                    addBotMessageWithHints("Hello! Let's practice English conversation. First, please introduce yourself.", 0, true);
                     currentQuestionIndex = 1;
                 }
             }, 500);
-        }
-
-        function getSampleLesson() {
-            return {
-                "lesson": {
-                    "topic": "Travel",
-                    "level": "intermediate",
-                    "focus": "conversation",
-                    "description": "An intermediate level conversation about travel and tourism",
-                    "conversation": [
-                        {
-                            "speaker": "bot",
-                            "message": "Hello! Let's practice English conversation about travel. First, please introduce yourself. Tell me your name and where you're from.",
-                            "expectedResponses": ["my name is", "i am", "i'm from", "from", "live in", "originally from"],
-                            "minLength": 6,
-                            "hints": ["Say: My name is [name] and I'm from [place].", "Try: I'm [name] and I live in [city/country].", "Example: Hello, my name is John and I'm from New York."]
-                        },
-                        {
-                            "speaker": "bot",
-                            "message": "Nice to meet you! Have you traveled to any interesting places recently?",
-                            "expectedResponses": ["traveled to", "visited", "went to", "recently", "last year", "vacation", "trip"],
-                            "minLength": 7,
-                            "hints": ["Example: I visited [country] last [month/year].", "Try: Recently, I went to [place] and...", "You can say: Yes, I traveled to Paris last summer."]
-                        },
-                        {
-                            "speaker": "bot",
-                            "message": "That sounds interesting! What was your favorite part of that trip?",
-                            "expectedResponses": ["favorite part", "enjoyed", "liked", "best thing", "memorable", "experience"],
-                            "minLength": 7,
-                            "hints": ["You can mention: The food, the people, the sights, or the activities.", "Example: My favorite part was trying the local cuisine.", "Try: I really enjoyed visiting the historical landmarks."]
-                        }
-                    ]
-                }
-            };
         }
 
         // Lesson Management Functions
@@ -1857,7 +2053,7 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
                     <div class="no-lessons">
                         <i class="fas fa-book-open"></i>
                         <p>No saved lessons yet</p>
-                        <p style="font-size: 12px; margin-top: 10px;">Generate a prompt, use AI, and paste your lesson JSON</p>
+                        <p style="font-size: 12px; margin-top: 10px;">Use the default lessons or generate your own!</p>
                     </div>
                 `;
                 return;
@@ -1869,7 +2065,7 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
                 lessonItem.className = 'lesson-item';
                 lessonItem.innerHTML = `
                     <div class="lesson-info">
-                        <h4>${lesson.topic || 'Untitled Lesson'}</h4>
+                        <h4>${lesson.topic || 'Untitled Lesson'} ${lesson.isDefault ? '<span style="font-size:10px; color:#0084ff;">(Default)</span>' : ''}</h4>
                         <p>
                             <span>${lesson.level || 'intermediate'}</span>
                             <span>•</span>
@@ -1885,7 +2081,7 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
                         <button class="lesson-btn edit" onclick="editLesson(${index})" title="Edit">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="lesson-btn delete" onclick="deleteLesson(${index})" title="Delete">
+                        <button class="lesson-btn delete" onclick="deleteLesson(${index})" title="Delete" ${lesson.isDefault ? 'disabled style="opacity:0.5"' : ''}>
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -2095,7 +2291,8 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
                     topic: topic,
                     level: level,
                     conversation: dialogs,
-                    updatedAt: new Date().toISOString()
+                    updatedAt: new Date().toISOString(),
+                    isDefault: false // Mark as custom when edited
                 };
             } else {
                 lessons.push({
@@ -2105,7 +2302,8 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
                     focus: "conversation",
                     conversation: dialogs,
                     createdAt: new Date().toISOString(),
-                    lastPracticed: new Date().toISOString()
+                    lastPracticed: new Date().toISOString(),
+                    isDefault: false
                 });
             }
             
@@ -2117,9 +2315,16 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
         }
 
         window.deleteLesson = function(index) {
+            const lessons = JSON.parse(localStorage.getItem(STORAGE_KEYS.LESSONS) || '[]');
+            
+            // Check if it's a default lesson
+            if (lessons[index] && lessons[index].isDefault) {
+                alert('Default lessons cannot be deleted!');
+                return;
+            }
+            
             if (!confirm('Are you sure you want to delete this lesson?')) return;
             
-            const lessons = JSON.parse(localStorage.getItem(STORAGE_KEYS.LESSONS) || '[]');
             lessons.splice(index, 1);
             localStorage.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(lessons));
             loadLessons();
@@ -2502,7 +2707,13 @@ Please generate the complete JSON now. Return ONLY the JSON object, no additiona
             
             localStorage.removeItem(STORAGE_KEYS.LESSONS);
             localStorage.removeItem(STORAGE_KEYS.SETTINGS);
-            alert('All data cleared successfully!');
+            
+            // Restore default lessons
+            setTimeout(() => {
+                checkAndSaveDefaultLessons();
+            }, 100);
+            
+            alert('All data cleared successfully! Default lessons restored.');
             loadLessons();
             loadSettings();
             closeSettings();
